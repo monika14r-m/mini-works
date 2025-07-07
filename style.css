@@ -1,503 +1,1004 @@
-@import url('https://fonts.googleapis.com/css2?family=Creepster&family=Eater&family=Orbitron:wght@400;700&family=Impact&display=swap');
+// Application State
+let currentImage = null;
+let currentLayout = 'single';
+let currentFrame = 'classic-white';
+let selectedEffects = [];
+let currentCaption = '';
+let currentFont = 'Arial';
+let currentFontSize = 18;
+let currentTextColor = '#000000';
+let stickers = [];
+let stream = null;
+let isDarkMode = true;
+let stripImages = [];
+let stripIndex = 0;
+let bottomAreaOnly = false;
 
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+// Frame combinations (36 vibrant double-colored frames)
+const frames = [
+    { id: 'classic-white', colors: ['#ffffff', '#f0f0f0'], name: 'Classic White' },
+    { id: 'sunset-orange', colors: ['#ff6b35', '#f7931e'], name: 'Sunset Orange' },
+    { id: 'ocean-blue', colors: ['#1e3a8a', '#3b82f6'], name: 'Ocean Blue' },
+    { id: 'forest-green', colors: ['#059669', '#10b981'], name: 'Forest Green' },
+    { id: 'royal-purple', colors: ['#7c3aed', '#a855f7'], name: 'Royal Purple' },
+    { id: 'cherry-red', colors: ['#dc2626', '#ef4444'], name: 'Cherry Red' },
+    { id: 'golden-yellow', colors: ['#d97706', '#f59e0b'], name: 'Golden Yellow' },
+    { id: 'hot-pink', colors: ['#ec4899', '#f472b6'], name: 'Hot Pink' },
+    { id: 'mint-green', colors: ['#06b6d4', '#67e8f9'], name: 'Mint Green' },
+    { id: 'lavender', colors: ['#8b5cf6', '#c4b5fd'], name: 'Lavender' },
+    { id: 'coral-peach', colors: ['#fb7185', '#fda4af'], name: 'Coral Peach' },
+    { id: 'emerald', colors: ['#059669', '#34d399'], name: 'Emerald' },
+    { id: 'indigo', colors: ['#4f46e5', '#6366f1'], name: 'Indigo' },
+    { id: 'amber', colors: ['#f59e0b', '#fbbf24'], name: 'Amber' },
+    { id: 'rose-gold', colors: ['#f43f5e', '#fb7185'], name: 'Rose Gold' },
+    { id: 'electric-blue', colors: ['#0ea5e9', '#38bdf8'], name: 'Electric Blue' },
+    { id: 'lime-green', colors: ['#65a30d', '#84cc16'], name: 'Lime Green' },
+    { id: 'magenta', colors: ['#d946ef', '#e879f9'], name: 'Magenta' },
+    { id: 'teal', colors: ['#0d9488', '#14b8a6'], name: 'Teal' },
+    { id: 'crimson', colors: ['#b91c1c', '#dc2626'], name: 'Crimson' },
+    { id: 'neon-purple', colors: ['#a21caf', '#c026d3'], name: 'Neon Purple' },
+    { id: 'turquoise', colors: ['#0891b2', '#0ea5e9'], name: 'Turquoise' },
+    { id: 'fire-orange', colors: ['#ea580c', '#f97316'], name: 'Fire Orange' },
+    { id: 'electric-pink', colors: ['#be185d', '#db2777'], name: 'Electric Pink' },
+    { id: 'midnight-black', colors: ['#000000', '#1f1f1f'], name: 'Midnight Black' },
+    { id: 'silver-chrome', colors: ['#c0c0c0', '#e5e5e5'], name: 'Silver Chrome' },
+    { id: 'copper-bronze', colors: ['#b87333', '#cd7f32'], name: 'Copper Bronze' },
+    { id: 'galaxy-purple', colors: ['#4c1d95', '#6b46c1'], name: 'Galaxy Purple' },
+    { id: 'sunset-pink', colors: ['#ff69b4', '#ff1493'], name: 'Sunset Pink' },
+    { id: 'arctic-blue', colors: ['#87ceeb', '#4682b4'], name: 'Arctic Blue' },
+    { id: 'desert-sand', colors: ['#f4a460', '#daa520'], name: 'Desert Sand' },
+    { id: 'jungle-green', colors: ['#228b22', '#32cd32'], name: 'Jungle Green' },
+    { id: 'volcanic-red', colors: ['#8b0000', '#b22222'], name: 'Volcanic Red' },
+    { id: 'cosmic-blue', colors: ['#191970', '#4169e1'], name: 'Cosmic Blue' },
+    { id: 'electric-yellow', colors: ['#ffff00', '#ffd700'], name: 'Electric Yellow' },
+    { id: 'rainbow-gradient', colors: ['#ff0000', '#ff7f00', '#ffff00', '#00ff00', '#0000ff', '#4b0082', '#9400d3'], name: 'Rainbow' }
+];
+
+// Effects with improved implementations
+const effects = {
+    meme: [
+        { id: 'cool-sunglasses', name: '😎 Cool Sunglasses', apply: applyCoolSunglasses },
+        { id: 'deal-with-it', name: '🕶️ Deal With It', apply: applyDealWithIt },
+        { id: 'thug-life', name: '💰 Thug Life', apply: applyThugLife },
+        { id: 'doge-effect', name: '🐕 Doge Meme', apply: applyDogeEffect },
+        { id: 'heart-eyes', name: '😍 Heart Eyes', apply: applyHeartEyes },
+        { id: 'rainbow-overlay', name: '🌈 Rainbow', apply: applyRainbowOverlay },
+        { id: 'glitch-effect', name: '📺 Glitch', apply: applyGlitchEffect },
+        { id: 'laser-eyes', name: '👁️ Laser Eyes', apply: applyLaserEyes },
+        { id: 'fire-effect', name: '🔥 Fire', apply: applyFireEffect },
+        { id: 'sparkles', name: '✨ Sparkles', apply: applySparkles },
+        { id: 'neon-border', name: '🌟 Neon Border', apply: applyNeonBorder },
+        { id: 'comic-style', name: '💥 Comic Style', apply: applyComicStyle }
+    ],
+    cinematic: [
+        { id: 'vintage-film', name: '📽️ Vintage Film', apply: applyVintageFilm },
+        { id: 'soft-blur', name: '✨ Soft Blur', apply: applySoftBlur },
+        { id: 'retro-synthwave', name: '🌆 Synthwave', apply: applyRetroSynthwave },
+        { id: 'sepia-tone', name: '🏜️ Sepia', apply: applySepia },
+        { id: 'black-white', name: '⚫ B&W', apply: applyBlackWhite },
+        { id: 'warm-filter', name: '🔥 Warm', apply: applyWarmFilter },
+        { id: 'cool-filter', name: '❄️ Cool', apply: applyCoolFilter },
+        { id: 'high-contrast', name: '⚡ High Contrast', apply: applyHighContrast },
+        { id: 'vignette', name: '🌙 Vignette', apply: applyVignette },
+        { id: 'grain-effect', name: '🌾 Film Grain', apply: applyGrainEffect },
+        { id: 'neon-glow', name: '💫 Neon Glow', apply: applyNeonGlow },
+        { id: 'cyberpunk', name: '🌃 Cyberpunk', apply: applyCyberpunk },
+        { id: 'dreamy-soft', name: '💭 Dreamy', apply: applyDreamySoft },
+        { id: 'golden-hour', name: '🌅 Golden Hour', apply: applyGoldenHour },
+        { id: 'noir-style', name: '🎭 Film Noir', apply: applyNoirStyle },
+        { id: 'pastel-aesthetic', name: '🎨 Pastel', apply: applyPastelAesthetic }
+    ]
+};
+
+// Stickers (60+ emoji collection)
+const stickerEmojis = [
+    '😀', '😃', '😄', '😁', '😆', '😅', '😂', '🤣', '😊', '😇',
+    '🙂', '🙃', '😉', '😌', '😍', '🥰', '😘', '😗', '😙', '😚',
+    '😋', '😛', '😝', '😜', '🤪', '🤨', '🧐', '🤓', '😎', '🤩',
+    '🥳', '😏', '😒', '😞', '😔', '😟', '😕', '🙁', '☹️', '😣',
+    '😖', '😫', '😩', '🥺', '😢', '😭', '😤', '😠', '😡', '🤬',
+    '🤯', '😳', '🥵', '🥶', '😱', '😨', '😰', '😥', '😓', '🤗',
+    '🤔', '🤭', '🤫', '🤥', '😶', '😐', '😑', '😬', '🙄', '😯'
+];
+
+// Initialize the application
+document.addEventListener('DOMContentLoaded', function() {
+    initializeApp();
+    setupEventListeners();
+    renderFrames();
+    renderEffects();
+    renderStickers();
+    drawCanvas();
+});
+
+function initializeApp() {
+    // Set initial theme
+    document.body.setAttribute('data-theme', isDarkMode ? 'dark' : 'light');
+    updateThemeToggle();
+    setupFontOptions();
 }
 
-:root {
-    --bg-primary: #1a1a2e;
-    --bg-secondary: #16213e;
-    --bg-tertiary: #0f3460;
-    --text-primary: #e94560;
-    --text-secondary: #ffffff;
-    --text-muted: #b0b0b0;
-    --border: #333;
-    --accent: #e94560;
-    --success: #4caf50;
-    --warning: #ff9800;
+function setupFontOptions() {
+    const fontOptions = document.querySelectorAll('.font-option');
+    fontOptions.forEach(option => {
+        const font = option.dataset.font;
+        option.style.fontFamily = font;
+        
+        if (font === currentFont) {
+            option.classList.add('active');
+        }
+        
+        option.addEventListener('click', () => {
+            fontOptions.forEach(f => f.classList.remove('active'));
+            option.classList.add('active');
+            currentFont = font;
+            drawCanvas();
+        });
+    });
 }
 
-[data-theme="light"] {
-    --bg-primary: #f0f0f0;
-    --bg-secondary: #ffffff;
-    --bg-tertiary: #e0e0e0;
-    --text-primary: #1a1a2e;
-    --text-secondary: #333333;
-    --text-muted: #666666;
-    --border: #ddd;
-    --accent: #e94560;
-    --success: #4caf50;
-    --warning: #ff9800;
+function setupEventListeners() {
+    // Theme toggle
+    document.getElementById('themeToggle').addEventListener('click', toggleTheme);
+    
+    // Camera controls
+    document.getElementById('startCamera').addEventListener('click', startCamera);
+    document.getElementById('capturePhoto').addEventListener('click', capturePhoto);
+    document.getElementById('captureStrip').addEventListener('click', captureStrip);
+    document.getElementById('uploadBtn').addEventListener('click', () => {
+        document.getElementById('uploadPhoto').click();
+    });
+    document.getElementById('uploadPhoto').addEventListener('change', handleFileUpload);
+    
+    // Sticker controls
+    document.getElementById('clearStickers').addEventListener('click', clearStickers);
+    document.getElementById('bottomAreaOnly').addEventListener('change', (e) => {
+        bottomAreaOnly = e.target.checked;
+    });
+    
+    // Layout controls
+    document.querySelectorAll('input[name="layout"]').forEach(radio => {
+        radio.addEventListener('change', (e) => {
+            currentLayout = e.target.value;
+            drawCanvas();
+        });
+    });
+    
+    // Caption controls
+    document.getElementById('captionInput').addEventListener('input', (e) => {
+        currentCaption = e.target.value;
+        drawCanvas();
+    });
+    
+    document.getElementById('fontSizeSlider').addEventListener('input', (e) => {
+        currentFontSize = parseInt(e.target.value);
+        drawCanvas();
+    });
+    
+    document.getElementById('textColorPicker').addEventListener('change', (e) => {
+        currentTextColor = e.target.value;
+        drawCanvas();
+    });
+    
+    // Download button
+    document.getElementById('downloadBtn').addEventListener('click', downloadPolaroid);
+    
+    // Effect category buttons
+    document.querySelectorAll('.category-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            renderEffects(e.target.dataset.category);
+        });
+    });
 }
 
-body {
-    font-family: 'Arial', sans-serif;
-    background: var(--bg-primary);
-    color: var(--text-secondary);
-    overflow-x: hidden;
+function toggleTheme() {
+    isDarkMode = !isDarkMode;
+    document.body.setAttribute('data-theme', isDarkMode ? 'dark' : 'light');
+    updateThemeToggle();
 }
 
-.app {
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
+function updateThemeToggle() {
+    const toggle = document.getElementById('themeToggle');
+    toggle.textContent = isDarkMode ? '☀️' : '🌙';
 }
 
-.header {
-    background: var(--bg-secondary);
-    padding: 1rem 2rem;
-    border-bottom: 2px solid var(--border);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+function renderFrames() {
+    const frameGrid = document.getElementById('frameGrid');
+    frameGrid.innerHTML = '';
+    
+    frames.forEach(frame => {
+        const frameDiv = document.createElement('div');
+        frameDiv.className = 'frame-option';
+        frameDiv.dataset.frameId = frame.id;
+        frameDiv.style.background = `linear-gradient(45deg, ${frame.colors[0]}, ${frame.colors[1]})`;
+        frameDiv.title = frame.name;
+        
+        if (frame.id === currentFrame) {
+            frameDiv.classList.add('active');
+        }
+        
+        frameDiv.addEventListener('click', () => {
+            currentFrame = frame.id;
+            document.querySelectorAll('.frame-option').forEach(f => f.classList.remove('active'));
+            frameDiv.classList.add('active');
+            drawCanvas();
+        });
+        
+        frameGrid.appendChild(frameDiv);
+    });
 }
 
-.header h1 {
-    color: var(--text-primary);
-    font-size: 1.5rem;
-    font-weight: bold;
+function renderEffects(category = 'meme') {
+    const effectGrid = document.getElementById('effectGrid');
+    effectGrid.innerHTML = '';
+    
+    effects[category].forEach(effect => {
+        const effectDiv = document.createElement('div');
+        effectDiv.className = 'effect-option';
+        effectDiv.dataset.effectId = effect.id;
+        effectDiv.textContent = effect.name;
+        
+        if (selectedEffects.includes(effect.id)) {
+            effectDiv.classList.add('active');
+        }
+        
+        effectDiv.addEventListener('click', () => {
+            toggleEffect(effect.id);
+            effectDiv.classList.toggle('active');
+            drawCanvas();
+        });
+        
+        effectGrid.appendChild(effectDiv);
+    });
 }
 
-.theme-toggle {
-    background: var(--bg-tertiary);
-    border: 2px solid var(--border);
-    color: var(--text-secondary);
-    padding: 0.5rem 1rem;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 1rem;
-    transition: all 0.3s ease;
+function renderStickers() {
+    const stickerGrid = document.getElementById('stickerGrid');
+    stickerGrid.innerHTML = '';
+    
+    stickerEmojis.forEach(emoji => {
+        const stickerDiv = document.createElement('div');
+        stickerDiv.className = 'sticker-option';
+        stickerDiv.textContent = emoji;
+        
+        stickerDiv.addEventListener('click', () => {
+            addSticker(emoji);
+        });
+        
+        stickerGrid.appendChild(stickerDiv);
+    });
 }
 
-.theme-toggle:hover {
-    background: var(--accent);
-    transform: scale(1.05);
+function toggleEffect(effectId) {
+    const index = selectedEffects.indexOf(effectId);
+    if (index > -1) {
+        selectedEffects.splice(index, 1);
+    } else {
+        selectedEffects.push(effectId);
+    }
 }
 
-.container {
-    flex: 1;
-    display: flex;
-    gap: 2rem;
-    padding: 2rem;
-    max-width: 1400px;
-    margin: 0 auto;
-    width: 100%;
-}
-
-.controls-panel {
-    flex: 1;
-    background: var(--bg-secondary);
-    border-radius: 12px;
-    padding: 1.5rem;
-    border: 2px solid var(--border);
-    height: fit-content;
-    max-height: 80vh;
-    overflow-y: auto;
-}
-
-.control-section {
-    margin-bottom: 2rem;
-    padding-bottom: 1.5rem;
-    border-bottom: 1px solid var(--border);
-}
-
-.control-section:last-child {
-    border-bottom: none;
-}
-
-.control-section h3 {
-    color: var(--text-primary);
-    margin-bottom: 1rem;
-    font-size: 1.1rem;
-}
-
-.capture-effects-section {
-    display: flex;
-    gap: 1.5rem;
-    margin-bottom: 2rem;
-    padding-bottom: 1.5rem;
-    border-bottom: 1px solid var(--border);
-}
-
-.capture-panel {
-    flex: 1;
-}
-
-.effects-panel {
-    flex: 1;
-}
-
-.camera-controls {
-    display: flex;
-    gap: 0.5rem;
-    flex-wrap: wrap;
-}
-
-.camera-controls button {
-    background: var(--bg-tertiary);
-    border: 2px solid var(--border);
-    color: var(--text-secondary);
-    padding: 0.5rem 1rem;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    font-size: 0.9rem;
-}
-
-.camera-controls button:hover:not(:disabled) {
-    background: var(--accent);
-    transform: translateY(-2px);
-}
-
-.camera-controls button:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-}
-
-.layout-controls {
-    display: flex;
-    gap: 1rem;
-}
-
-.layout-controls label {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    cursor: pointer;
-    padding: 0.5rem;
-    border-radius: 6px;
-    transition: background 0.2s ease;
-}
-
-.layout-controls label:hover {
-    background: var(--bg-tertiary);
-}
-
-.frame-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
-    gap: 0.5rem;
-    max-height: 200px;
-    overflow-y: auto;
-}
-
-.frame-option {
-    width: 60px;
-    height: 60px;
-    border: 3px solid transparent;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    background-size: cover;
-    background-position: center;
-}
-
-.frame-option:hover {
-    transform: scale(1.1);
-    border-color: var(--accent);
-}
-
-.frame-option.active {
-    border-color: var(--accent);
-    box-shadow: 0 0 15px rgba(233, 69, 96, 0.5);
-}
-
-.effect-categories {
-    display: flex;
-    gap: 0.5rem;
-    margin-bottom: 1rem;
-}
-
-.category-btn {
-    background: var(--bg-tertiary);
-    border: 2px solid var(--border);
-    color: var(--text-secondary);
-    padding: 0.5rem 1rem;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    font-size: 0.9rem;
-}
-
-.category-btn.active {
-    background: var(--accent);
-    border-color: var(--accent);
-}
-
-.effect-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
-    gap: 0.5rem;
-    max-height: 200px;
-    overflow-y: auto;
-}
-
-.font-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
-    gap: 0.5rem;
-    margin-bottom: 1rem;
-}
-
-.font-option {
-    background: var(--bg-tertiary);
-    border: 2px solid var(--border);
-    color: var(--text-secondary);
-    padding: 0.5rem;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    font-size: 0.8rem;
-    text-align: center;
-    min-height: 50px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.font-option:hover {
-    background: var(--accent);
-    transform: translateY(-2px);
-}
-
-.font-option.active {
-    background: var(--accent);
-    border-color: var(--accent);
-}
-
-.text-controls {
-    display: flex;
-    gap: 1rem;
-    align-items: center;
-}
-
-.text-controls label {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    color: var(--text-secondary);
-    font-size: 0.9rem;
-}
-
-.text-controls input[type="range"] {
-    width: 100px;
-}
-
-.text-controls input[type="color"] {
-    width: 40px;
-    height: 30px;
-    border: 2px solid var(--border);
-    border-radius: 6px;
-    cursor: pointer;
-}
-
-.effect-option {
-    background: var(--bg-tertiary);
-    border: 2px solid var(--border);
-    color: var(--text-secondary);
-    padding: 0.5rem;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    font-size: 0.8rem;
-    text-align: center;
-    min-height: 60px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.effect-option:hover {
-    background: var(--accent);
-    transform: translateY(-2px);
-}
-
-.effect-option.active {
-    background: var(--accent);
-    border-color: var(--accent);
-}
-
-.sticker-controls {
-    display: flex;
-    gap: 1rem;
-    align-items: center;
-    margin-bottom: 1rem;
-}
-
-.sticker-controls button {
-    background: var(--warning);
-    border: none;
-    color: white;
-    padding: 0.5rem 1rem;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 0.9rem;
-    transition: all 0.2s ease;
-}
-
-.sticker-controls button:hover {
-    background: #e68900;
-    transform: translateY(-2px);
-}
-
-.sticker-controls label {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    color: var(--text-secondary);
-    font-size: 0.9rem;
-}
-
-.sticker-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(40px, 1fr));
-    gap: 0.5rem;
-    max-height: 200px;
-    overflow-y: auto;
-}
-
-.sticker-option {
-    background: var(--bg-tertiary);
-    border: 2px solid var(--border);
-    padding: 0.5rem;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    font-size: 1.5rem;
-    text-align: center;
-    min-height: 50px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.sticker-option:hover {
-    background: var(--accent);
-    transform: scale(1.1);
-}
-
-#captionInput {
-    width: 100%;
-    background: var(--bg-tertiary);
-    border: 2px solid var(--border);
-    color: var(--text-secondary);
-    padding: 0.75rem;
-    border-radius: 6px;
-    font-size: 1rem;
-}
-
-#downloadBtn {
-    width: 100%;
-    background: var(--success);
-    border: none;
-    color: white;
-    padding: 1rem;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 1rem;
-    font-weight: bold;
-    transition: all 0.2s ease;
-}
-
-#downloadBtn:hover {
-    background: #45a049;
-    transform: translateY(-2px);
-}
-
-.preview-panel {
-    flex: 1;
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    padding: 2rem;
-}
-
-.canvas-container {
-    background: var(--bg-secondary);
-    border: 2px solid var(--border);
-    border-radius: 12px;
-    padding: 2rem;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-}
-
-#polaroidCanvas {
-    max-width: 100%;
-    height: auto;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-}
-
-.countdown {
-    font-size: 4rem;
-    font-weight: bold;
-    color: var(--accent);
-    text-align: center;
-    margin-top: 1rem;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-}
-
-.countdown.active {
-    opacity: 1;
-}
-
-#video {
-    width: 100%;
-    max-width: 200px;
-    border-radius: 8px;
-    border: 2px solid var(--border);
-    margin-top: 1rem;
-}
-
-@media (max-width: 768px) {
-    .container {
-        flex-direction: column;
-        gap: 1rem;
-        padding: 1rem;
+function addSticker(emoji) {
+    let x, y;
+    
+    if (bottomAreaOnly) {
+        // Place stickers in bottom area only
+        x = Math.random() * 300 + 50;
+        y = Math.random() * 100 + 350;
+    } else {
+        // Place stickers anywhere
+        x = Math.random() * 300 + 50;
+        y = Math.random() * 400 + 50;
     }
     
-    .controls-panel {
-        max-height: none;
-        order: 2;
-    }
-    
-    .preview-panel {
-        order: 1;
-        padding: 1rem;
-    }
-    
-    .capture-effects-section {
-        flex-direction: column;
-        gap: 1rem;
-    }
-    
-    .frame-grid, .effect-grid, .sticker-grid, .font-grid {
-        grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
-    }
-    
-    .text-controls {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 0.5rem;
+    const sticker = {
+        emoji: emoji,
+        x: x,
+        y: y,
+        size: 30,
+        rotation: 0
+    };
+    stickers.push(sticker);
+    drawCanvas();
+}
+
+function clearStickers() {
+    stickers = [];
+    drawCanvas();
+}
+
+async function startCamera() {
+    try {
+        stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        const video = document.getElementById('video');
+        video.srcObject = stream;
+        video.style.display = 'block';
+        video.play();
+        
+        document.getElementById('startCamera').disabled = true;
+        document.getElementById('capturePhoto').disabled = false;
+        document.getElementById('captureStrip').disabled = false;
+    } catch (err) {
+        console.error('Error accessing camera:', err);
+        alert('Unable to access camera. Please check permissions.');
     }
 }
 
-/* Scrollbar styling */
-::-webkit-scrollbar {
-    width: 8px;
+function capturePhoto() {
+    const video = document.getElementById('video');
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    
+    // Start countdown
+    startCountdown(() => {
+        ctx.drawImage(video, 0, 0);
+        const imageData = canvas.toDataURL('image/png');
+        loadImage(imageData);
+        
+        // Stop camera
+        if (stream) {
+            stream.getTracks().forEach(track => track.stop());
+        }
+        video.style.display = 'none';
+        document.getElementById('startCamera').disabled = false;
+        document.getElementById('capturePhoto').disabled = true;
+        document.getElementById('captureStrip').disabled = true;
+    });
 }
 
-::-webkit-scrollbar-track {
-    background: var(--bg-tertiary);
+function startCountdown(callback, countdownTime = 3) {
+    const countdown = document.getElementById('countdown');
+    let count = countdownTime;
+    
+    countdown.classList.add('active');
+    countdown.textContent = count;
+    
+    const timer = setInterval(() => {
+        count--;
+        if (count > 0) {
+            countdown.textContent = count;
+        } else {
+            countdown.textContent = '📸';
+            setTimeout(() => {
+                countdown.classList.remove('active');
+                callback();
+            }, 500);
+            clearInterval(timer);
+        }
+    }, 1000);
 }
 
-::-webkit-scrollbar-thumb {
-    background: var(--accent);
-    border-radius: 4px;
+function captureStrip() {
+    stripImages = [];
+    stripIndex = 0;
+    captureNextStrip();
 }
 
-::-webkit-scrollbar-thumb:hover {
-    background: #d63851;
+function captureNextStrip() {
+    if (stripIndex >= 3) {
+        // All captures done, create strip
+        currentLayout = 'strip';
+        drawCanvas();
+        return;
+    }
+    
+    const video = document.getElementById('video');
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    
+    // Different countdown times for each capture
+    const countdownTimes = [5, 3, 2];
+    
+    startCountdown(() => {
+        ctx.drawImage(video, 0, 0);
+        const imageData = canvas.toDataURL('image/png');
+        
+        const img = new Image();
+        img.onload = function() {
+            stripImages.push(img);
+            stripIndex++;
+            
+            if (stripIndex < 3) {
+                setTimeout(() => captureNextStrip(), 1000);
+            } else {
+                // All captures done
+                if (stream) {
+                    stream.getTracks().forEach(track => track.stop());
+                }
+                video.style.display = 'none';
+                document.getElementById('startCamera').disabled = false;
+                document.getElementById('capturePhoto').disabled = true;
+                document.getElementById('captureStrip').disabled = true;
+                
+                currentLayout = 'strip';
+                drawCanvas();
+            }
+        };
+        img.src = imageData;
+    }, countdownTimes[stripIndex]);
+}
+
+function handleFileUpload(event) {
+    const file = event.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            loadImage(e.target.result);
+        };
+        reader.readAsDataURL(file);
+    }
+}
+
+function loadImage(src) {
+    const img = new Image();
+    img.onload = function() {
+        currentImage = img;
+        drawCanvas();
+    };
+    img.src = src;
+}
+
+function drawCanvas() {
+    const canvas = document.getElementById('polaroidCanvas');
+    const ctx = canvas.getContext('2d');
+    
+    // Clear canvas
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    if (currentLayout === 'single') {
+        drawSinglePolaroid(ctx, canvas);
+    } else {
+        drawStripPolaroid(ctx, canvas);
+    }
+}
+
+function drawSinglePolaroid(ctx, canvas) {
+    const frameData = frames.find(f => f.id === currentFrame);
+    
+    // Draw frame background
+    const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+    gradient.addColorStop(0, frameData.colors[0]);
+    gradient.addColorStop(1, frameData.colors[1]);
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    // Draw inner white area
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(20, 20, canvas.width - 40, canvas.height - 120);
+    
+    // Draw image if available
+    if (currentImage) {
+        const imageArea = {
+            x: 20,
+            y: 20,
+            width: canvas.width - 40,
+            height: canvas.height - 120
+        };
+        
+        drawImageWithEffects(ctx, currentImage, imageArea);
+    }
+    
+    // Draw caption
+    if (currentCaption) {
+        ctx.fillStyle = currentTextColor;
+        ctx.font = `${currentFontSize}px ${currentFont}`;
+        ctx.textAlign = 'center';
+        ctx.fillText(currentCaption, canvas.width / 2, canvas.height - 50);
+    }
+    
+    // Draw stickers
+    drawStickers(ctx);
+}
+
+function drawStripPolaroid(ctx, canvas) {
+    const frameData = frames.find(f => f.id === currentFrame);
+    const stripHeight = (canvas.height - 80) / 3;
+    
+    // Draw frame background
+    const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+    gradient.addColorStop(0, frameData.colors[0]);
+    gradient.addColorStop(1, frameData.colors[1]);
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    // Draw three strips
+    for (let i = 0; i < 3; i++) {
+        const y = 20 + i * stripHeight;
+        
+        // Draw white background for each strip
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(20, y, canvas.width - 40, stripHeight - 10);
+        
+        // Draw image if available
+        const imageToUse = stripImages.length > i ? stripImages[i] : currentImage;
+        if (imageToUse) {
+            const imageArea = {
+                x: 20,
+                y: y,
+                width: canvas.width - 40,
+                height: stripHeight - 10
+            };
+            
+            drawImageWithEffects(ctx, imageToUse, imageArea);
+        }
+    }
+    
+    // Draw caption
+    if (currentCaption) {
+        ctx.fillStyle = currentTextColor;
+        ctx.font = `${currentFontSize}px ${currentFont}`;
+        ctx.textAlign = 'center';
+        ctx.fillText(currentCaption, canvas.width / 2, canvas.height - 20);
+    }
+    
+    // Draw stickers
+    drawStickers(ctx);
+}
+
+function drawImageWithEffects(ctx, image, area) {
+    // Save context
+    ctx.save();
+    
+    // Calculate scaling to fit image in area
+    const scale = Math.min(area.width / image.width, area.height / image.height);
+    const scaledWidth = image.width * scale;
+    const scaledHeight = image.height * scale;
+    const x = area.x + (area.width - scaledWidth) / 2;
+    const y = area.y + (area.height - scaledHeight) / 2;
+    
+    // Draw image
+    ctx.drawImage(image, x, y, scaledWidth, scaledHeight);
+    
+    // Apply effects
+    selectedEffects.forEach(effectId => {
+        const effect = findEffect(effectId);
+        if (effect) {
+            effect.apply(ctx, { x, y, width: scaledWidth, height: scaledHeight });
+        }
+    });
+    
+    // Restore context
+    ctx.restore();
+}
+
+function drawStickers(ctx) {
+    stickers.forEach(sticker => {
+        ctx.save();
+        ctx.translate(sticker.x, sticker.y);
+        ctx.rotate(sticker.rotation);
+        ctx.font = `${sticker.size}px Arial`;
+        ctx.textAlign = 'center';
+        ctx.fillText(sticker.emoji, 0, 0);
+        ctx.restore();
+    });
+}
+
+function findEffect(effectId) {
+    for (const category in effects) {
+        const effect = effects[category].find(e => e.id === effectId);
+        if (effect) return effect;
+    }
+    return null;
+}
+
+function downloadPolaroid() {
+    const canvas = document.getElementById('polaroidCanvas');
+    const link = document.createElement('a');
+    link.download = `polaroid-${Date.now()}.png`;
+    link.href = canvas.toDataURL();
+    link.click();
+}
+
+// Effect implementations
+function applyCoolSunglasses(ctx, area) {
+    // Draw realistic sunglasses frame
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.9)';
+    ctx.fillRect(area.x + area.width * 0.15, area.y + area.height * 0.25, area.width * 0.7, area.height * 0.15);
+    
+    // Add lens shine effect
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+    ctx.fillRect(area.x + area.width * 0.18, area.y + area.height * 0.27, area.width * 0.15, area.height * 0.05);
+    ctx.fillRect(area.x + area.width * 0.57, area.y + area.height * 0.27, area.width * 0.15, area.height * 0.05);
+    
+    // Bridge
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.9)';
+    ctx.fillRect(area.x + area.width * 0.45, area.y + area.height * 0.28, area.width * 0.1, area.height * 0.03);
+}
+
+function applyThugLife(ctx, area) {
+    // Draw gold chain
+    ctx.strokeStyle = '#FFD700';
+    ctx.lineWidth = 8;
+    ctx.beginPath();
+    ctx.arc(area.x + area.width / 2, area.y + area.height * 0.7, area.width * 0.15, 0, Math.PI);
+    ctx.stroke();
+    
+    // Draw sunglasses
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.9)';
+    ctx.fillRect(area.x + area.width * 0.2, area.y + area.height * 0.3, area.width * 0.6, area.height * 0.15);
+    
+    // Add "THUG LIFE" text with shadow
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+    ctx.font = 'bold 18px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText('THUG LIFE', area.x + area.width / 2 + 2, area.y + area.height * 0.9 + 2);
+    
+    ctx.fillStyle = '#FFD700';
+    ctx.fillText('THUG LIFE', area.x + area.width / 2, area.y + area.height * 0.9);
+}
+
+function applyDealWithIt(ctx, area) {
+    // Draw sunglasses with gradient
+    const gradient = ctx.createLinearGradient(area.x, area.y + area.height * 0.25, area.x, area.y + area.height * 0.45);
+    gradient.addColorStop(0, 'rgba(0, 0, 0, 0.9)');
+    gradient.addColorStop(1, 'rgba(50, 50, 50, 0.9)');
+    ctx.fillStyle = gradient;
+    ctx.fillRect(area.x + area.width * 0.15, area.y + area.height * 0.25, area.width * 0.7, area.height * 0.2);
+    
+    // Add "DEAL WITH IT" text
+    ctx.fillStyle = 'white';
+    ctx.font = 'bold 14px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText('DEAL WITH IT', area.x + area.width / 2, area.y + area.height * 0.9);
+}
+
+function applyDogeEffect(ctx, area) {
+    // Add doge-style text with different colors
+    const phrases = ['much photo', 'very cool', 'wow', 'such style'];
+    const colors = ['#FF69B4', '#00FF00', '#FFD700', '#FF6347'];
+    
+    ctx.font = 'bold 16px Comic Sans MS';
+    
+    phrases.forEach((phrase, i) => {
+        ctx.fillStyle = colors[i];
+        ctx.strokeStyle = 'white';
+        ctx.lineWidth = 2;
+        const x = area.x + (Math.random() * 0.6 + 0.1) * area.width;
+        const y = area.y + (i + 1) * area.height / 5;
+        ctx.strokeText(phrase, x, y);
+        ctx.fillText(phrase, x, y);
+    });
+}
+
+function applyHeartEyes(ctx, area) {
+    // Draw heart-shaped eyes
+    ctx.fillStyle = '#FF69B4';
+    
+    // Left heart eye
+    drawHeart(ctx, area.x + area.width * 0.3, area.y + area.height * 0.35, 15);
+    // Right heart eye
+    drawHeart(ctx, area.x + area.width * 0.7, area.y + area.height * 0.35, 15);
+}
+
+function drawHeart(ctx, x, y, size) {
+    ctx.beginPath();
+    ctx.moveTo(x, y + size * 0.3);
+    ctx.bezierCurveTo(x, y, x - size * 0.5, y, x - size * 0.5, y + size * 0.3);
+    ctx.bezierCurveTo(x - size * 0.5, y + size * 0.6, x, y + size, x, y + size);
+    ctx.bezierCurveTo(x, y + size, x + size * 0.5, y + size * 0.6, x + size * 0.5, y + size * 0.3);
+    ctx.bezierCurveTo(x + size * 0.5, y, x, y, x, y + size * 0.3);
+    ctx.fill();
+}
+
+function applyRainbowOverlay(ctx, area) {
+    // Create rainbow gradient
+    const gradient = ctx.createLinearGradient(area.x, area.y, area.x + area.width, area.y);
+    gradient.addColorStop(0, 'rgba(255, 0, 0, 0.3)');
+    gradient.addColorStop(0.16, 'rgba(255, 165, 0, 0.3)');
+    gradient.addColorStop(0.32, 'rgba(255, 255, 0, 0.3)');
+    gradient.addColorStop(0.48, 'rgba(0, 255, 0, 0.3)');
+    gradient.addColorStop(0.64, 'rgba(0, 0, 255, 0.3)');
+    gradient.addColorStop(0.8, 'rgba(75, 0, 130, 0.3)');
+    gradient.addColorStop(1, 'rgba(148, 0, 211, 0.3)');
+    
+    ctx.fillStyle = gradient;
+    ctx.fillRect(area.x, area.y, area.width, area.height);
+}
+
+function applyGlitchEffect(ctx, area) {
+    // Create glitch effect with RGB shift
+    const imageData = ctx.getImageData(area.x, area.y, area.width, area.height);
+    const data = imageData.data;
+    
+    // Red channel shift
+    for (let i = 0; i < data.length; i += 4) {
+        if (Math.random() > 0.9) {
+            data[i] = Math.min(255, data[i] + 50); // Red
+        }
+    }
+    
+    // Add random noise
+    for (let i = 0; i < data.length; i += 4) {
+        if (Math.random() > 0.95) {
+            data[i] = Math.random() * 255;
+            data[i + 1] = Math.random() * 255;
+            data[i + 2] = Math.random() * 255;
+        }
+    }
+    
+    ctx.putImageData(imageData, area.x, area.y);
+}
+
+function applyLaserEyes(ctx, area) {
+    // Draw laser beams from eyes
+    ctx.strokeStyle = '#FF0000';
+    ctx.lineWidth = 8;
+    ctx.shadowColor = '#FF0000';
+    ctx.shadowBlur = 10;
+    
+    // Left laser
+    ctx.beginPath();
+    ctx.moveTo(area.x + area.width * 0.3, area.y + area.height * 0.35);
+    ctx.lineTo(area.x + area.width * 0.1, area.y + area.height * 0.2);
+    ctx.stroke();
+    
+    // Right laser
+    ctx.beginPath();
+    ctx.moveTo(area.x + area.width * 0.7, area.y + area.height * 0.35);
+    ctx.lineTo(area.x + area.width * 0.9, area.y + area.height * 0.2);
+    ctx.stroke();
+    
+    ctx.shadowBlur = 0;
+}
+
+function applyFireEffect(ctx, area) {
+    // Draw fire particles
+    ctx.fillStyle = '#FF4500';
+    for (let i = 0; i < 50; i++) {
+        const x = area.x + Math.random() * area.width;
+        const y = area.y + area.height * 0.7 + Math.random() * area.height * 0.3;
+        const size = Math.random() * 8 + 2;
+        
+        ctx.beginPath();
+        ctx.arc(x, y, size, 0, 2 * Math.PI);
+        ctx.fill();
+    }
+    
+    // Add orange glow
+    ctx.fillStyle = 'rgba(255, 165, 0, 0.3)';
+    ctx.fillRect(area.x, area.y + area.height * 0.6, area.width, area.height * 0.4);
+}
+
+function applySparkles(ctx, area) {
+    // Draw sparkles
+    ctx.fillStyle = '#FFD700';
+    for (let i = 0; i < 30; i++) {
+        const x = area.x + Math.random() * area.width;
+        const y = area.y + Math.random() * area.height;
+        const size = Math.random() * 6 + 2;
+        
+        // Draw star shape
+        drawStar(ctx, x, y, size);
+    }
+}
+
+function drawStar(ctx, x, y, size) {
+    ctx.beginPath();
+    ctx.moveTo(x, y - size);
+    ctx.lineTo(x + size * 0.3, y - size * 0.3);
+    ctx.lineTo(x + size, y);
+    ctx.lineTo(x + size * 0.3, y + size * 0.3);
+    ctx.lineTo(x, y + size);
+    ctx.lineTo(x - size * 0.3, y + size * 0.3);
+    ctx.lineTo(x - size, y);
+    ctx.lineTo(x - size * 0.3, y - size * 0.3);
+    ctx.closePath();
+    ctx.fill();
+}
+
+function applyNeonBorder(ctx, area) {
+    // Draw neon border
+    ctx.strokeStyle = '#00FFFF';
+    ctx.lineWidth = 4;
+    ctx.shadowColor = '#00FFFF';
+    ctx.shadowBlur = 15;
+    
+    ctx.strokeRect(area.x + 5, area.y + 5, area.width - 10, area.height - 10);
+    
+    // Add inner glow
+    ctx.strokeStyle = '#FF00FF';
+    ctx.lineWidth = 2;
+    ctx.shadowColor = '#FF00FF';
+    ctx.shadowBlur = 10;
+    
+    ctx.strokeRect(area.x + 10, area.y + 10, area.width - 20, area.height - 20);
+    
+    ctx.shadowBlur = 0;
+}
+
+function applyComicStyle(ctx, area) {
+    // Add comic book style effects
+    ctx.strokeStyle = '#000000';
+    ctx.lineWidth = 3;
+    ctx.strokeRect(area.x + 2, area.y + 2, area.width - 4, area.height - 4);
+    
+    // Add halftone pattern
+    ctx.fillStyle = 'rgba(255, 255, 0, 0.3)';
+    for (let x = area.x; x < area.x + area.width; x += 20) {
+        for (let y = area.y; y < area.y + area.height; y += 20) {
+            ctx.beginPath();
+            ctx.arc(x, y, 3, 0, 2 * Math.PI);
+            ctx.fill();
+        }
+    }
+    
+    // Add "POW!" text
+    ctx.fillStyle = 'red';
+    ctx.font = 'bold 24px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText('POW!', area.x + area.width / 2, area.y + area.height * 0.2);
+}
+
+function applyVintageFilm(ctx, area) {
+    ctx.fillStyle = 'rgba(139, 69, 19, 0.2)';
+    ctx.fillRect(area.x, area.y, area.width, area.height);
+}
+
+function applySoftBlur(ctx, area) {
+    ctx.filter = 'blur(2px)';
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
+    ctx.fillRect(area.x, area.y, area.width, area.height);
+    ctx.filter = 'none';
+}
+
+function applyRetroSynthwave(ctx, area) {
+    // Create synthwave gradient
+    const gradient = ctx.createLinearGradient(area.x, area.y, area.x, area.y + area.height);
+    gradient.addColorStop(0, 'rgba(255, 0, 255, 0.4)');
+    gradient.addColorStop(0.5, 'rgba(0, 255, 255, 0.4)');
+    gradient.addColorStop(1, 'rgba(255, 0, 128, 0.4)');
+    
+    ctx.fillStyle = gradient;
+    ctx.fillRect(area.x, area.y, area.width, area.height);
+    
+    // Add grid pattern
+    ctx.strokeStyle = 'rgba(0, 255, 255, 0.6)';
+    ctx.lineWidth = 2;
+    for (let i = 0; i < 10; i++) {
+        const y = area.y + (i * area.height) / 10;
+        ctx.beginPath();
+        ctx.moveTo(area.x, y);
+        ctx.lineTo(area.x + area.width, y);
+        ctx.stroke();
+    }
+}
+
+function applySepia(ctx, area) {
+    ctx.fillStyle = 'rgba(160, 120, 80, 0.3)';
+    ctx.fillRect(area.x, area.y, area.width, area.height);
+}
+
+function applyBlackWhite(ctx, area) {
+    ctx.fillStyle = 'rgba(128, 128, 128, 0.4)';
+    ctx.fillRect(area.x, area.y, area.width, area.height);
+}
+
+function applyWarmFilter(ctx, area) {
+    ctx.fillStyle = 'rgba(255, 200, 100, 0.2)';
+    ctx.fillRect(area.x, area.y, area.width, area.height);
+}
+
+function applyCoolFilter(ctx, area) {
+    ctx.fillStyle = 'rgba(100, 150, 255, 0.2)';
+    ctx.fillRect(area.x, area.y, area.width, area.height);
+}
+
+function applyHighContrast(ctx, area) {
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
+    ctx.fillRect(area.x, area.y, area.width, area.height);
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+    ctx.fillRect(area.x, area.y, area.width / 2, area.height);
+}
+
+function applyVignette(ctx, area) {
+    const gradient = ctx.createRadialGradient(
+        area.x + area.width / 2, area.y + area.height / 2, 0,
+        area.x + area.width / 2, area.y + area.height / 2, area.width / 2
+    );
+    gradient.addColorStop(0, 'rgba(0, 0, 0, 0)');
+    gradient.addColorStop(1, 'rgba(0, 0, 0, 0.5)');
+    ctx.fillStyle = gradient;
+    ctx.fillRect(area.x, area.y, area.width, area.height);
+}
+
+function applyGrainEffect(ctx, area) {
+    for (let i = 0; i < 500; i++) {
+        const x = area.x + Math.random() * area.width;
+        const y = area.y + Math.random() * area.height;
+        const opacity = Math.random() * 0.3;
+        ctx.fillStyle = `rgba(255, 255, 255, ${opacity})`;
+        ctx.fillRect(x, y, 1, 1);
+    }
+}
+
+function applyNeonGlow(ctx, area) {
+    ctx.shadowColor = '#00ffff';
+    ctx.shadowBlur = 20;
+    ctx.fillStyle = 'rgba(0, 255, 255, 0.1)';
+    ctx.fillRect(area.x, area.y, area.width, area.height);
+    ctx.shadowBlur = 0;
+}
+
+function applyDreamySoft(ctx, area) {
+    // Create dreamy soft focus effect
+    ctx.filter = 'blur(3px)';
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+    ctx.fillRect(area.x, area.y, area.width, area.height);
+    ctx.filter = 'none';
+    
+    // Add soft pink overlay
+    ctx.fillStyle = 'rgba(255, 192, 203, 0.2)';
+    ctx.fillRect(area.x, area.y, area.width, area.height);
+}
+
+function applyGoldenHour(ctx, area) {
+    // Golden hour warm glow
+    ctx.fillStyle = 'rgba(255, 215, 0, 0.3)';
+    ctx.fillRect(area.x, area.y, area.width, area.height);
+    
+    // Add sun rays
+    ctx.strokeStyle = 'rgba(255, 255, 0, 0.2)';
+    ctx.lineWidth = 3;
+    const centerX = area.x + area.width * 0.8;
+    const centerY = area.y + area.height * 0.2;
+    
+    for (let i = 0; i < 8; i++) {
+        const angle = (i * Math.PI) / 4;
+        ctx.beginPath();
+        ctx.moveTo(centerX, centerY);
+        ctx.lineTo(centerX + Math.cos(angle) * 100, centerY + Math.sin(angle) * 100);
+        ctx.stroke();
+    }
+}
+
+function applyNoirStyle(ctx, area) {
+    // Film noir high contrast
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
+    ctx.fillRect(area.x, area.y, area.width, area.height);
+    
+    // Add dramatic shadows
+    const gradient = ctx.createLinearGradient(area.x, area.y, area.x + area.width, area.y);
+    gradient.addColorStop(0, 'rgba(0, 0, 0, 0.6)');
+    gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+    
+    ctx.fillStyle = gradient;
+    ctx.fillRect(area.x, area.y, area.width / 2, area.height);
+}
+
+function applyPastelAesthetic(ctx, area) {
+    // Pastel overlay
+    const gradient = ctx.createLinearGradient(area.x, area.y, area.x + area.width, area.y + area.height);
+    gradient.addColorStop(0, 'rgba(255, 182, 193, 0.3)');
+    gradient.addColorStop(0.5, 'rgba(221, 160, 221, 0.3)');
+    gradient.addColorStop(1, 'rgba(173, 216, 230, 0.3)');
+    
+    ctx.fillStyle = gradient;
+    ctx.fillRect(area.x, area.y, area.width, area.height);
+}
+
+function applyCyberpunk(ctx, area) {
+    // Enhanced cyberpunk effect
+    ctx.fillStyle = 'rgba(255, 0, 255, 0.3)';
+    ctx.fillRect(area.x, area.y, area.width, area.height);
+    ctx.fillStyle = 'rgba(0, 255, 255, 0.3)';
+    ctx.fillRect(area.x, area.y, area.width / 2, area.height);
+    
+    // Add glitch lines
+    ctx.strokeStyle = '#00FF00';
+    ctx.lineWidth = 2;
+    for (let i = 0; i < 5; i++) {
+        const y = area.y + Math.random() * area.height;
+        ctx.beginPath();
+        ctx.moveTo(area.x, y);
+        ctx.lineTo(area.x + area.width, y);
+        ctx.stroke();
+    }
 }
