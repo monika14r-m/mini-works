@@ -7,41 +7,41 @@
 }
 
 :root {
-    /* Dark theme (default) */
-    --bg-primary: #0a0a0f;
-    --bg-secondary: #1a1a2e;
-    --bg-tertiary: #16213e;
-    --bg-quaternary: #0f3460;
-    --text-primary: #ffffff;
-    --text-secondary: #e0e0e0;
-    --text-muted: #a0a0a0;
-    --accent-primary: #667eea;
-    --accent-secondary: #764ba2;
-    --accent-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    --border: rgba(255, 255, 255, 0.1);
-    --shadow: rgba(0, 0, 0, 0.3);
-    --success: #4ade80;
-    --warning: #fb923c;
-    --danger: #f87171;
-    --glass-bg: rgba(255, 255, 255, 0.05);
-    --glass-border: rgba(255, 255, 255, 0.1);
+    /* Dark theme colors */
+    --bg-primary: hsl(240, 50%, 3%);
+    --bg-secondary: hsl(240, 20%, 8%);
+    --bg-tertiary: hsl(240, 15%, 12%);
+    --bg-quaternary: hsl(240, 10%, 18%);
+    --text-primary: hsl(0, 0%, 98%);
+    --text-secondary: hsl(0, 0%, 88%);
+    --text-muted: hsl(0, 0%, 64%);
+    --accent-primary: hsl(248, 78%, 70%);
+    --accent-secondary: hsl(280, 45%, 60%);
+    --accent-gradient: linear-gradient(135deg, hsl(248, 78%, 70%) 0%, hsl(280, 45%, 60%) 100%);
+    --border: hsla(0, 0%, 100%, 0.1);
+    --shadow: hsla(0, 0%, 0%, 0.3);
+    --success: hsl(142, 71%, 58%);
+    --warning: hsl(25, 95%, 62%);
+    --danger: hsl(0, 73%, 70%);
+    --glass-bg: hsla(0, 0%, 100%, 0.05);
+    --glass-border: hsla(0, 0%, 100%, 0.1);
 }
 
 [data-theme="light"] {
-    --bg-primary: #f8fafc;
-    --bg-secondary: #ffffff;
-    --bg-tertiary: #f1f5f9;
-    --bg-quaternary: #e2e8f0;
-    --text-primary: #1e293b;
-    --text-secondary: #334155;
-    --text-muted: #64748b;
-    --accent-primary: #3b82f6;
-    --accent-secondary: #8b5cf6;
-    --accent-gradient: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
-    --border: rgba(0, 0, 0, 0.1);
-    --shadow: rgba(0, 0, 0, 0.1);
-    --glass-bg: rgba(0, 0, 0, 0.02);
-    --glass-border: rgba(0, 0, 0, 0.05);
+    --bg-primary: hsl(0, 0%, 98%);
+    --bg-secondary: hsl(0, 0%, 100%);
+    --bg-tertiary: hsl(218, 27%, 96%);
+    --bg-quaternary: hsl(220, 13%, 91%);
+    --text-primary: hsl(220, 39%, 11%);
+    --text-secondary: hsl(215, 25%, 27%);
+    --text-muted: hsl(215, 16%, 47%);
+    --accent-primary: hsl(213, 94%, 68%);
+    --accent-secondary: hsl(262, 83%, 58%);
+    --accent-gradient: linear-gradient(135deg, hsl(213, 94%, 68%) 0%, hsl(262, 83%, 58%) 100%);
+    --border: hsla(0, 0%, 0%, 0.1);
+    --shadow: hsla(0, 0%, 0%, 0.1);
+    --glass-bg: hsla(0, 0%, 0%, 0.02);
+    --glass-border: hsla(0, 0%, 0%, 0.05);
 }
 
 body {
@@ -52,28 +52,47 @@ body {
     overflow-x: hidden;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-}
-
-.app {
     min-height: 100vh;
-    display: flex;
-    flex-direction: column;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .header {
     background: var(--bg-secondary);
     backdrop-filter: blur(20px);
     border-bottom: 1px solid var(--border);
-    padding: 1rem 1.5rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
     position: sticky;
     top: 0;
     z-index: 100;
+    padding: 1rem 1.5rem;
 }
 
-.header h1 {
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.header-brand {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.brand-icon {
+    width: 2.5rem;
+    height: 2.5rem;
+    background: var(--accent-gradient);
+    border-radius: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.125rem;
+}
+
+.brand-title {
     font-size: 1.5rem;
     font-weight: 700;
     background: var(--accent-gradient);
@@ -87,11 +106,13 @@ body {
     border: 1px solid var(--border);
     color: var(--text-primary);
     padding: 0.5rem 1rem;
-    border-radius: 12px;
+    border-radius: 0.75rem;
     cursor: pointer;
-    font-size: 1.2rem;
+    font-size: 1.125rem;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     backdrop-filter: blur(10px);
+    min-width: 44px;
+    min-height: 44px;
 }
 
 .theme-toggle:hover {
@@ -100,7 +121,6 @@ body {
 }
 
 .main-content {
-    flex: 1;
     display: grid;
     grid-template-columns: 1fr 400px;
     gap: 2rem;
@@ -121,7 +141,7 @@ body {
     position: relative;
     background: var(--bg-secondary);
     border: 1px solid var(--border);
-    border-radius: 20px;
+    border-radius: 1.25rem;
     padding: 2rem;
     box-shadow: 0 25px 50px -12px var(--shadow);
     backdrop-filter: blur(20px);
@@ -136,12 +156,12 @@ body {
 #polaroidCanvas {
     max-width: 100%;
     height: auto;
-    border-radius: 12px;
+    border-radius: 0.75rem;
     box-shadow: 0 10px 25px -5px var(--shadow);
     transition: all 0.3s ease;
 }
 
-.preview-overlay {
+.upload-overlay {
     position: absolute;
     top: 2rem;
     left: 2rem;
@@ -150,11 +170,14 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 12px;
+    border-radius: 0.75rem;
     transition: opacity 0.3s ease;
+    background: hsla(0, 0%, 0%, 0.3);
+    backdrop-filter: blur(4px);
+    cursor: pointer;
 }
 
-.preview-overlay.hidden {
+.upload-overlay.hidden {
     opacity: 0;
     pointer-events: none;
 }
@@ -163,10 +186,9 @@ body {
     text-align: center;
     padding: 3rem;
     border: 2px dashed var(--border);
-    border-radius: 12px;
+    border-radius: 0.75rem;
     background: var(--glass-bg);
     backdrop-filter: blur(10px);
-    cursor: pointer;
     transition: all 0.3s ease;
 }
 
@@ -177,14 +199,82 @@ body {
 }
 
 .upload-icon {
-    font-size: 3rem;
-    margin-bottom: 1rem;
+    width: 4rem;
+    height: 4rem;
+    background: var(--accent-gradient);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1rem;
+    color: white;
+    font-size: 1.5rem;
+}
+
+.upload-prompt h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: var(--text-primary);
+}
+
+.upload-prompt p {
+    color: var(--text-muted);
+}
+
+.camera-preview {
+    position: absolute;
+    top: 2rem;
+    left: 2rem;
+    right: 2rem;
+    bottom: 2rem;
+    width: calc(100% - 4rem);
+    height: calc(100% - 4rem);
+    object-fit: cover;
+    border-radius: 0.75rem;
+    transform: scaleX(-1);
+    display: none;
+}
+
+.camera-preview.active {
+    display: block;
+}
+
+.countdown-timer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: hsla(0, 0%, 0%, 0.5);
+    backdrop-filter: blur(4px);
+    border-radius: 0.75rem;
+}
+
+.countdown-timer.active {
+    display: flex;
+}
+
+.countdown-number {
+    font-size: 4rem;
+    font-weight: 700;
+    color: var(--accent-primary);
+    text-shadow: 0 0 20px currentColor;
+    animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
 }
 
 .controls-section {
     background: var(--bg-secondary);
     border: 1px solid var(--border);
-    border-radius: 20px;
+    border-radius: 1.25rem;
     padding: 1.5rem;
     height: fit-content;
     max-height: 80vh;
@@ -203,14 +293,18 @@ body {
     margin-bottom: 0;
 }
 
-.control-panel h3 {
-    font-size: 1.1rem;
+.panel-title {
+    font-size: 1.125rem;
     font-weight: 600;
     margin-bottom: 1rem;
     color: var(--text-primary);
     display: flex;
     align-items: center;
     gap: 0.5rem;
+}
+
+.panel-title i {
+    color: var(--accent-primary);
 }
 
 .camera-controls {
@@ -223,7 +317,7 @@ body {
 .btn {
     padding: 0.75rem 1rem;
     border: none;
-    border-radius: 12px;
+    border-radius: 0.75rem;
     font-size: 0.875rem;
     font-weight: 500;
     cursor: pointer;
@@ -234,6 +328,7 @@ body {
     justify-content: center;
     gap: 0.5rem;
     backdrop-filter: blur(10px);
+    min-height: 44px;
 }
 
 .btn:disabled {
@@ -280,58 +375,28 @@ body {
     box-shadow: 0 10px 25px -5px var(--shadow);
 }
 
-.camera-preview {
-    width: 100%;
-    max-width: 250px;
-    border-radius: 12px;
-    border: 1px solid var(--border);
-    margin-top: 1rem;
-}
-
-.countdown {
-    font-size: 4rem;
-    font-weight: 700;
-    color: var(--accent-primary);
-    text-align: center;
-    margin-top: 1rem;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-    text-shadow: 0 0 20px currentColor;
-}
-
-.countdown.active {
-    opacity: 1;
-    animation: pulse 1s infinite;
-}
-
-@keyframes pulse {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.1); }
-}
-
 .palm-detection {
-    margin-top: 1rem;
-    padding: 1rem;
+    display: none;
     background: var(--glass-bg);
     border: 1px solid var(--border);
-    border-radius: 12px;
+    border-radius: 0.75rem;
+    padding: 1rem;
     text-align: center;
-    display: none;
 }
 
 .palm-detection.active {
     display: block;
 }
 
-.detection-status {
-    margin-top: 0.5rem;
-    font-size: 0.875rem;
-    color: var(--text-muted);
+.palm-detection i {
+    font-size: 2rem;
+    color: var(--success);
+    margin-bottom: 0.5rem;
 }
 
-.detection-status.detected {
-    color: var(--success);
-    font-weight: 600;
+.palm-detection p {
+    font-size: 0.875rem;
+    color: var(--text-muted);
 }
 
 .layout-grid {
@@ -347,7 +412,7 @@ body {
     gap: 0.5rem;
     padding: 1rem;
     border: 1px solid var(--border);
-    border-radius: 12px;
+    border-radius: 0.75rem;
     cursor: pointer;
     transition: all 0.3s ease;
     background: var(--glass-bg);
@@ -371,15 +436,21 @@ body {
     width: 40px;
     height: 50px;
     border: 2px solid var(--border);
-    border-radius: 6px;
+    border-radius: 0.375rem;
     transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
 }
 
-.layout-preview.single {
+.layout-single {
+    width: 100%;
+    height: 100%;
     background: var(--bg-tertiary);
 }
 
-.layout-preview.strip {
+.layout-strip {
+    width: 100%;
+    height: 100%;
     background: repeating-linear-gradient(
         to bottom,
         var(--bg-tertiary) 0px,
@@ -400,12 +471,13 @@ body {
     padding: 0.5rem 1rem;
     background: var(--bg-tertiary);
     border: 1px solid var(--border);
-    border-radius: 8px;
+    border-radius: 0.5rem;
     color: var(--text-primary);
     cursor: pointer;
     transition: all 0.3s ease;
     font-size: 0.875rem;
     white-space: nowrap;
+    min-height: 44px;
 }
 
 .category-btn.active {
@@ -418,7 +490,7 @@ body {
     transform: translateY(-1px);
 }
 
-.effect-grid {
+.effects-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
     gap: 0.75rem;
@@ -430,7 +502,7 @@ body {
     aspect-ratio: 1;
     background: var(--bg-tertiary);
     border: 1px solid var(--border);
-    border-radius: 12px;
+    border-radius: 0.75rem;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -441,6 +513,7 @@ body {
     text-align: center;
     padding: 0.5rem;
     gap: 0.25rem;
+    min-height: 44px;
 }
 
 .effect-option:hover {
@@ -459,7 +532,7 @@ body {
     font-size: 1.5rem;
 }
 
-.frame-grid {
+.frames-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
     gap: 0.75rem;
@@ -470,10 +543,12 @@ body {
 .frame-option {
     aspect-ratio: 1;
     border: 2px solid transparent;
-    border-radius: 12px;
+    border-radius: 0.75rem;
     cursor: pointer;
     transition: all 0.3s ease;
     position: relative;
+    min-height: 44px;
+    min-width: 44px;
 }
 
 .frame-option:hover {
@@ -491,7 +566,7 @@ body {
     padding: 0.75rem;
     background: var(--bg-tertiary);
     border: 1px solid var(--border);
-    border-radius: 12px;
+    border-radius: 0.75rem;
     color: var(--text-primary);
     font-size: 1rem;
     margin-bottom: 1rem;
@@ -505,63 +580,48 @@ body {
 }
 
 .caption-controls {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-}
-
-.font-selector {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
-    gap: 0.5rem;
+    grid-template-columns: 1fr auto;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
 }
 
-.font-option {
-    padding: 0.5rem;
+.font-select {
     background: var(--bg-tertiary);
     border: 1px solid var(--border);
-    border-radius: 8px;
-    text-align: center;
-    cursor: pointer;
-    transition: all 0.3s ease;
+    border-radius: 0.5rem;
+    color: var(--text-primary);
+    padding: 0.5rem 0.75rem;
     font-size: 0.875rem;
+    cursor: pointer;
 }
 
-.font-option:hover {
-    border-color: var(--accent-primary);
-    background: var(--glass-border);
+.color-picker {
+    width: 3rem;
+    height: 2.5rem;
+    border: 1px solid var(--border);
+    border-radius: 0.5rem;
+    cursor: pointer;
+    background: transparent;
 }
 
-.font-option.active {
-    background: var(--accent-gradient);
-    color: white;
-    border-color: var(--accent-primary);
-}
-
-.text-controls {
+.font-size-control {
     display: flex;
-    gap: 1rem;
-    align-items: center;
-    flex-wrap: wrap;
-}
-
-.text-controls label {
-    display: flex;
-    align-items: center;
+    flex-direction: column;
     gap: 0.5rem;
+}
+
+.font-size-control label {
     font-size: 0.875rem;
     color: var(--text-muted);
 }
 
-.text-controls input[type="range"] {
-    width: 80px;
-}
-
-.text-controls input[type="color"] {
-    width: 40px;
-    height: 30px;
-    border: 1px solid var(--border);
-    border-radius: 6px;
+.size-slider {
+    width: 100%;
+    height: 0.5rem;
+    background: var(--bg-tertiary);
+    border-radius: 0.25rem;
+    outline: none;
     cursor: pointer;
 }
 
@@ -582,7 +642,13 @@ body {
     font-size: 0.875rem;
 }
 
-.sticker-grid {
+.checkbox-label input[type="checkbox"] {
+    width: 1rem;
+    height: 1rem;
+    accent-color: var(--accent-primary);
+}
+
+.stickers-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(40px, 1fr));
     gap: 0.5rem;
@@ -594,19 +660,26 @@ body {
     aspect-ratio: 1;
     background: var(--bg-tertiary);
     border: 1px solid var(--border);
-    border-radius: 8px;
+    border-radius: 0.5rem;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
     transition: all 0.3s ease;
     font-size: 1.5rem;
+    min-height: 44px;
+    min-width: 44px;
+    user-select: none;
 }
 
 .sticker-option:hover {
     transform: scale(1.1);
     background: var(--glass-border);
     border-color: var(--accent-primary);
+}
+
+.hidden {
+    display: none;
 }
 
 /* Custom scrollbar */
@@ -628,97 +701,8 @@ body {
     background: var(--accent-secondary);
 }
 
-/* Device-Adaptive Responsive Design */
-
-/* Desktop/Large screens (1200px+) */
-@media (min-width: 1200px) {
-    .main-content {
-        grid-template-columns: 1fr 450px;
-        gap: 3rem;
-        padding: 3rem;
-    }
-    
-    .canvas-container {
-        padding: 3rem;
-    }
-    
-    #polaroidCanvas {
-        max-width: 500px;
-    }
-    
-    .effect-grid {
-        grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
-    }
-    
-    .frame-grid {
-        grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
-    }
-    
-    .control-panel h3 {
-        font-size: 1.2rem;
-    }
-}
-
-/* Laptop/Medium Desktop (1024px - 1199px) */
-@media (min-width: 1024px) and (max-width: 1199px) {
-    .main-content {
-        grid-template-columns: 1fr 400px;
-        gap: 2rem;
-        padding: 2rem;
-    }
-    
-    .canvas-container {
-        padding: 2rem;
-    }
-    
-    #polaroidCanvas {
-        max-width: 450px;
-    }
-}
-
-/* Tablet Landscape (768px - 1023px) */
-@media (min-width: 768px) and (max-width: 1023px) {
-    .main-content {
-        grid-template-columns: 1fr 350px;
-        gap: 1.5rem;
-        padding: 1.5rem;
-    }
-    
-    .canvas-container {
-        padding: 1.5rem;
-    }
-    
-    #polaroidCanvas {
-        max-width: 400px;
-    }
-    
-    .camera-controls {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 0.75rem;
-    }
-    
-    .effect-grid {
-        grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
-        max-height: 180px;
-    }
-    
-    .frame-grid {
-        grid-template-columns: repeat(auto-fill, minmax(45px, 1fr));
-        max-height: 140px;
-    }
-    
-    .font-selector {
-        grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
-    }
-    
-    .sticker-grid {
-        grid-template-columns: repeat(auto-fill, minmax(38px, 1fr));
-        max-height: 140px;
-    }
-}
-
-/* Tablet Portrait (600px - 767px) */
-@media (min-width: 600px) and (max-width: 767px) {
+/* Responsive Design */
+@media (max-width: 1024px) {
     .main-content {
         grid-template-columns: 1fr;
         gap: 1.5rem;
@@ -727,170 +711,31 @@ body {
     
     .preview-section {
         order: 1;
-        padding: 1rem 0;
     }
     
     .controls-section {
         order: 2;
         max-height: 60vh;
-        overflow-y: auto;
-    }
-    
-    .canvas-container {
-        padding: 2rem;
-    }
-    
-    #polaroidCanvas {
-        max-width: 350px;
-    }
-    
-    .camera-controls {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 0.75rem;
-    }
-    
-    .layout-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-    
-    .effect-grid {
-        grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
-        max-height: 200px;
-    }
-    
-    .frame-grid {
-        grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
-        max-height: 150px;
-    }
-    
-    .font-selector {
-        grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
-    }
-    
-    .sticker-grid {
-        grid-template-columns: repeat(auto-fill, minmax(40px, 1fr));
-        max-height: 150px;
-    }
-    
-    .text-controls {
-        flex-direction: row;
-        flex-wrap: wrap;
-        gap: 1rem;
-    }
-    
-    .countdown {
-        font-size: 3.5rem;
     }
 }
 
-/* Mobile Landscape (480px - 599px) */
-@media (min-width: 480px) and (max-width: 599px) {
+@media (max-width: 768px) {
     .main-content {
-        grid-template-columns: 1fr;
-        gap: 1rem;
         padding: 1rem;
-    }
-    
-    .preview-section {
-        order: 1;
-        padding: 0.5rem 0;
-    }
-    
-    .controls-section {
-        order: 2;
-        max-height: 50vh;
-        overflow-y: auto;
+        gap: 1rem;
     }
     
     .canvas-container {
         padding: 1.5rem;
     }
     
-    #polaroidCanvas {
-        max-width: 300px;
-    }
-    
-    .camera-controls {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 0.5rem;
-    }
-    
-    .effect-grid {
-        grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
-        max-height: 160px;
-    }
-    
-    .frame-grid {
-        grid-template-columns: repeat(auto-fill, minmax(40px, 1fr));
-        max-height: 120px;
-    }
-    
-    .font-selector {
-        grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
-    }
-    
-    .sticker-grid {
-        grid-template-columns: repeat(auto-fill, minmax(35px, 1fr));
-        max-height: 120px;
-    }
-    
-    .text-controls {
-        flex-direction: column;
-        gap: 0.5rem;
-    }
-    
-    .sticker-controls {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 0.5rem;
-    }
-    
-    .header h1 {
-        font-size: 1.25rem;
-    }
-    
-    .countdown {
-        font-size: 3rem;
-    }
-}
-
-/* Mobile Portrait (320px - 479px) */
-@media (max-width: 479px) {
-    .main-content {
-        grid-template-columns: 1fr;
-        gap: 0.75rem;
-        padding: 0.75rem;
-    }
-    
-    .preview-section {
-        order: 1;
-        padding: 0.5rem 0;
-    }
-    
-    .controls-section {
-        order: 2;
-        padding: 1rem;
-        border-radius: 16px;
-        max-height: 45vh;
-        overflow-y: auto;
-    }
-    
-    .canvas-container {
-        padding: 1rem;
-    }
-    
-    #polaroidCanvas {
-        max-width: 250px;
-    }
-    
     .camera-controls {
         grid-template-columns: 1fr;
         gap: 0.5rem;
     }
     
     .layout-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 0.5rem;
+        grid-template-columns: 1fr 1fr;
     }
     
     .effect-categories {
@@ -902,34 +747,67 @@ body {
         flex: 1;
         min-width: 0;
         font-size: 0.75rem;
-        padding: 0.5rem 0.5rem;
+        padding: 0.5rem;
     }
     
-    .effect-grid {
-        grid-template-columns: repeat(auto-fill, minmax(55px, 1fr));
-        max-height: 140px;
-        gap: 0.5rem;
+    .effects-grid {
+        grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+        max-height: 160px;
     }
     
-    .frame-grid {
+    .frames-grid {
+        grid-template-columns: repeat(auto-fill, minmax(40px, 1fr));
+        max-height: 120px;
+    }
+    
+    .stickers-grid {
         grid-template-columns: repeat(auto-fill, minmax(35px, 1fr));
-        max-height: 100px;
+        max-height: 120px;
+    }
+    
+    .brand-title {
+        font-size: 1.25rem;
+    }
+    
+    .countdown-number {
+        font-size: 3rem;
+    }
+    
+    .caption-controls {
+        grid-template-columns: 1fr;
         gap: 0.5rem;
     }
     
-    .font-selector {
-        grid-template-columns: repeat(auto-fill, minmax(55px, 1fr));
-        gap: 0.5rem;
+    .color-picker {
+        width: 100%;
+        height: 2.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .main-content {
+        padding: 0.75rem;
     }
     
-    .sticker-grid {
-        grid-template-columns: repeat(auto-fill, minmax(30px, 1fr));
-        max-height: 100px;
-        gap: 0.25rem;
+    .canvas-container {
+        padding: 1rem;
+    }
+    
+    .controls-section {
+        padding: 1rem;
+        max-height: 50vh;
+    }
+    
+    .brand-title {
+        font-size: 1.125rem;
+    }
+    
+    .countdown-number {
+        font-size: 2.5rem;
     }
     
     .btn {
-        padding: 0.625rem 0.5rem;
+        padding: 0.625rem 0.75rem;
         font-size: 0.8rem;
     }
     
@@ -938,123 +816,26 @@ body {
         font-size: 0.9rem;
     }
     
-    .upload-prompt {
-        padding: 1.5rem 1rem;
+    .effect-categories {
+        gap: 0.25rem;
     }
     
-    .upload-icon {
-        font-size: 2rem;
-    }
-    
-    .header {
-        padding: 0.75rem 1rem;
-    }
-    
-    .header h1 {
-        font-size: 1.1rem;
-    }
-    
-    .countdown {
-        font-size: 2.5rem;
-    }
-    
-    .text-controls {
-        flex-direction: column;
-        gap: 0.5rem;
-    }
-    
-    .sticker-controls {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 0.5rem;
-    }
-    
-    .control-panel {
-        margin-bottom: 1.5rem;
-        padding-bottom: 1.5rem;
-    }
-    
-    .control-panel h3 {
-        font-size: 1rem;
-        margin-bottom: 0.75rem;
-    }
-}
-
-/* Ultra-wide screens (1400px+) */
-@media (min-width: 1400px) {
-    .main-content {
-        grid-template-columns: 1fr 500px;
-        gap: 4rem;
-        padding: 4rem;
-        max-width: 1600px;
-    }
-    
-    .canvas-container {
-        padding: 4rem;
-    }
-    
-    #polaroidCanvas {
-        max-width: 600px;
-    }
-    
-    .effect-grid {
-        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-    }
-    
-    .frame-grid {
-        grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
-    }
-}
-
-/* High DPI displays */
-@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
-    #polaroidCanvas {
-        image-rendering: -webkit-optimize-contrast;
-        image-rendering: crisp-edges;
+    .category-btn {
+        font-size: 0.7rem;
+        padding: 0.375rem 0.5rem;
     }
 }
 
 /* Touch device optimizations */
 @media (hover: none) and (pointer: coarse) {
-    .btn {
+    .btn, .effect-option, .frame-option, .sticker-option, .layout-option {
         min-height: 44px;
         min-width: 44px;
-    }
-    
-    .effect-option, .frame-option, .sticker-option {
-        min-height: 44px;
-        min-width: 44px;
-    }
-    
-    .layout-option {
-        padding: 1.25rem;
     }
     
     .category-btn {
         min-height: 44px;
         padding: 0.75rem 1rem;
-    }
-}
-
-/* Landscape orientation adjustments */
-@media (orientation: landscape) and (max-height: 600px) {
-    .main-content {
-        grid-template-columns: 1fr 300px;
-        gap: 1rem;
-        padding: 1rem;
-    }
-    
-    .controls-section {
-        max-height: 80vh;
-    }
-    
-    .canvas-container {
-        padding: 1rem;
-    }
-    
-    #polaroidCanvas {
-        max-height: 300px;
-        width: auto;
     }
 }
 
