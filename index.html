@@ -1,95 +1,225 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>📸 Polaroid Editor - Create Stunning Instant Photos</title>
-  <meta name="description" content="Transform your photos with stunning effects, frames, and filters. Mobile-friendly polaroid photo editor with glass-morphism design.">
-  <link rel="stylesheet" href="style.css">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Creepster&family=Orbitron:wght@400;700&family=Courier+Prime&family=Bungee&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>📸 Polaroid Editor - Create Stunning Instant Photos</title>
+    <meta name="description" content="Transform your photos with stunning effects, frames, and filters. Mobile-friendly polaroid photo editor with glass-morphism design.">
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Creepster&family=Orbitron:wght@400;700&family=Courier+Prime&family=Bungee&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body data-theme="dark">
-  <!-- Header -->
-  <header class="glass-morphism sticky top-0 z-50 px-4 py-3 lg:px-6">
-    <div class="header-content">
-      <div class="header-brand">
-        <div class="brand-icon">
-          <i class="fas fa-camera"></i>
+    <!-- Header -->
+    <header class="glass-morphism sticky top-0 z-50 px-4 py-3 lg:px-6">
+        <div class="header-content">
+            <div class="header-brand">
+                <div class="brand-icon">
+                    <i class="fas fa-camera"></i>
+                </div>
+                <h1 class="brand-title">Polaroid Editor</h1>
+            </div>
+            <button id="themeToggle" class="theme-toggle">
+                <i class="fas fa-sun"></i>
+            </button>
         </div>
-        <h1 class="brand-title">Polaroid Editor</h1>
-      </div>
-      <button id="themeToggle" class="theme-toggle">
-        <i class="fas fa-sun"></i>
-      </button>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="content-container">
+            <!-- Canvas/Preview Section -->
+            <div class="preview-section">
+                <div class="canvas-wrapper">
+                    <div class="canvas-container">
+                        <canvas id="polaroidCanvas" width="400" height="500"></canvas>
+                        
+                        <!-- Upload Overlay -->
+                        <div id="uploadOverlay" class="upload-overlay">
+                            <div class="upload-prompt">
+                                <div class="upload-icon">
+                                    <i class="fas fa-camera"></i>
+                                </div>
+                                <h3>Drop a photo or tap to upload</h3>
+                                <p>Support for JPG, PNG, WebP formats</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Camera Preview -->
+                        <video id="videoPreview" class="camera-preview" autoplay playsinline></video>
+
+                </div>
+            </div>
+
+            <!-- Controls Section -->
+            <div class="controls-section">
+                <!-- Camera Controls -->
+                <div class="control-panel">
+                    <h3 class="panel-title">
+                        <i class="fas fa-camera"></i>
+                        Camera
+                    </h3>
+                    <div class="camera-controls">
+                        <button id="startCamera" class="btn btn-primary">
+                            <i class="fas fa-video"></i>Start Camera
+                        </button>
+                        <button id="capturePhoto" class="btn btn-secondary" disabled>
+                            <i class="fas fa-camera"></i>Capture
+                        </button>
+                        <button id="captureStrip" class="btn btn-secondary" disabled>
+                            <i class="fas fa-images"></i>3-Strip
+                        </button>
+                        <button id="uploadBtn" class="btn btn-outline">
+                            <i class="fas fa-upload"></i>Upload
+                        </button>
+                    </div>
+                    <input type="file" id="fileInput" accept="image/*" style="display: none;">
+                    
+                    <!-- Palm Detection -->
+                    <div id="palmDetection" class="palm-detection">
+                        <i class="fas fa-hand-paper"></i>
+                        <p>Show your palm to start timer</p>
+                    </div>
+                </div>
+
+                <!-- Layout Options -->
+                <div class="control-panel">
+                    <h3 class="panel-title">
+                        <i class="fas fa-th-large"></i>
+                        Layout
+                    </h3>
+                    <div class="layout-options">
+                        <label class="layout-option active">
+                            <input type="radio" name="layout" value="single" checked>
+                            <div class="layout-preview">
+                                <div class="layout-single"></div>
+                            </div>
+                            <span>Single</span>
+                        </label>
+                        <label class="layout-option">
+                            <input type="radio" name="layout" value="strip">
+                            <div class="layout-preview">
+                                <div class="layout-strip"></div>
+                            </div>
+                            <span>3-Strip</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Effects & Filters -->
+                <div class="control-panel">
+                    <h3 class="panel-title">
+                        <i class="fas fa-magic"></i>
+                        Effects & Filters
+                    </h3>
+                    <div class="effect-categories">
+                        <button class="effect-category-btn active" data-category="cinematic">
+                            🎬 Cinematic
+                        </button>
+                        <button class="effect-category-btn" data-category="meme">
+                            😄 Fun
+                        </button>
+                        <button class="effect-category-btn" data-category="vintage">
+                            📼 Vintage
+                        </button>
+                    </div>
+                    <div id="effectsGrid" class="effects-grid">
+                        <!-- Dynamic effects will be inserted here -->
+                    </div>
+                </div>
+
+                <!-- Frames -->
+                <div class="control-panel">
+                    <h3 class="panel-title">
+                        <i class="fas fa-border-style"></i>
+                        Frames
+                    </h3>
+                    <div id="framesGrid" class="frames-grid">
+                        <!-- Dynamic frames will be inserted here -->
+                    </div>
+                </div>
+
+                <!-- Caption -->
+                <div class="control-panel">
+                    <h3 class="panel-title">
+                        <i class="fas fa-font"></i>
+                        Caption
+                    </h3>
+                    <input type="text" id="captionInput" placeholder="Add your caption..." class="caption-input">
+                    <div class="caption-controls">
+                        <select id="fontSelect" class="font-select">
+                            <option value="Inter">Modern</option>
+                            <option value="Creepster">Spooky</option>
+                            <option value="Orbitron">Sci-Fi</option>
+                            <option value="Courier Prime">Typewriter</option>
+                            <option value="Bungee">Bold</option>
+                        </select>
+                        <input type="color" id="textColor" value="#ffffff" class="color-picker">
+                    </div>
+                    <div class="font-size-control">
+                        <label>Size</label>
+                        <input type="range" id="fontSize" min="12" max="48" value="18" class="size-slider">
+                        <span id="fontSizeValue">18px</span>
+                    </div>
+                </div>
+
+                <!-- Stickers -->
+                <div class="control-panel">
+                    <h3 class="panel-title">
+                        <i class="fas fa-smile"></i>
+                        Stickers
+                    </h3>
+                    <div class="sticker-controls">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="bottomAreaOnly">
+                            <span class="checkmark"></span>
+                            Bottom area only
+                        </label>
+                        <div class="sticker-buttons">
+                            <button id="undoStickers" class="btn btn-secondary">
+                                <i class="fas fa-undo"></i>Undo
+                            </button>
+                            <button id="clearStickers" class="btn btn-warning">
+                                <i class="fas fa-trash"></i>Clear All
+                            </button>
+                        </div>
+                    </div>
+                    <div id="stickersGrid" class="stickers-grid">
+                        <!-- Dynamic stickers will be inserted here -->
+                    </div>
+                </div>
+
+                <!-- Export -->
+                <div class="control-panel">
+                    <h3 class="panel-title">
+                        <i class="fas fa-download"></i>
+                        Export
+                    </h3>
+                    <button id="downloadBtn" class="btn btn-success btn-large">
+                        <i class="fas fa-download"></i>Download Polaroid
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast">
+        <div class="toast-content">
+            <i class="toast-icon"></i>
+            <span class="toast-message"></span>
+        </div>
     </div>
-  </header>
 
-  <!-- Main Content -->
-  <main class="main-content">
-    <div class="content-container">
-      <!-- Polaroid Strip Canvas Output -->
-      <div class="strip-preview">
-        <canvas id="stripCanvas" width="400" height="1500"></canvas>
-        <div class="strip-frame-options">
-          <label for="stripColor">Strip Color:</label>
-          <input type="color" id="stripColor" value="#ffffff">
-        </div>
-      </div>
-
-      <!-- Capture Controls -->
-      <div class="capture-controls">
-        <video id="videoPreview" autoplay playsinline width="400" height="300"></video>
-        <button class="btn" id="startCamera">Start Camera</button>
-        <div class="strip-capture">
-          <button class="btn" data-slot="0">Capture 1</button>
-          <button class="btn" data-slot="1">Capture 2</button>
-          <button class="btn" data-slot="2">Capture 3</button>
-        </div>
-        <button class="btn btn-success" id="downloadStrip">Download Strip</button>
-      </div>
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="loading-spinner"></div>
+        <p>Processing your photo...</p>
     </div>
-  </main>
 
-  <script>
-    const startCameraBtn = document.getElementById("startCamera");
-    const video = document.getElementById("videoPreview");
-    const stripCanvas = document.getElementById("stripCanvas");
-    const stripCtx = stripCanvas.getContext("2d");
-    const captureBtns = document.querySelectorAll(".strip-capture button");
-    const stripColorPicker = document.getElementById("stripColor");
-    const downloadStripBtn = document.getElementById("downloadStrip");
-
-    const frameHeight = 500;
-    let videoStream;
-
-    startCameraBtn.onclick = async () => {
-      videoStream = await navigator.mediaDevices.getUserMedia({ video: true });
-      video.srcObject = videoStream;
-    };
-
-    captureBtns.forEach(btn => {
-      btn.onclick = () => {
-        const slot = parseInt(btn.dataset.slot);
-        stripCtx.fillStyle = stripColorPicker.value;
-        stripCtx.fillRect(0, slot * frameHeight, stripCanvas.width, frameHeight);
-        stripCtx.drawImage(video, 0, slot * frameHeight + 50, 400, 400);
-
-        // Optional: Draw white border like a polaroid frame
-        stripCtx.fillStyle = "#fff";
-        stripCtx.fillRect(0, slot * frameHeight, 400, 500);
-        stripCtx.drawImage(video, 25, slot * frameHeight + 25, 350, 350);
-      };
-    });
-
-    downloadStripBtn.onclick = () => {
-      const link = document.createElement("a");
-      link.download = "polaroid-strip.png";
-      link.href = stripCanvas.toDataURL();
-      link.click();
-    };
-  </script>
+    <script src="script.js"></script>
 </body>
 </html>
