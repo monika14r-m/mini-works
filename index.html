@@ -2,108 +2,120 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Polaroid Editor</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="polaroid.css">
 </head>
 <body>
     <div class="app">
         <header class="header">
-            <h1>Polaroid Editor</h1>
+            <h1>📸 Polaroid Editor</h1>
             <button class="theme-toggle" id="themeToggle">🌙</button>
         </header>
 
-        <div class="container">
-            <div class="controls-panel">
-                <div class="capture-effects-section">
-                    <div class="capture-panel">
-                        <h3>📸 Capture</h3>
-                        <div class="camera-controls">
-                            <button id="startCamera">Start Camera</button>
-                            <button id="capturePhoto" disabled>Capture Photo</button>
-                            <button id="captureStrip" disabled>Capture 3-Strip</button>
-                            <input type="file" id="uploadPhoto" accept="image/*" style="display: none;">
-                            <button id="uploadBtn">Upload Photo</button>
+        <main class="main-content">
+            <!-- Preview Section -->
+            <section class="preview-section">
+                <div class="canvas-container">
+                    <canvas id="polaroidCanvas" width="400" height="500"></canvas>
+                    <div class="preview-overlay">
+                        <div class="upload-prompt" id="uploadPrompt">
+                            <div class="upload-icon">📷</div>
+                            <p>Drop a photo or tap to upload</p>
                         </div>
-                        <video id="video" width="200" height="150" style="display: none;"></video>
-                        <div id="countdown" class="countdown"></div>
                     </div>
+                </div>
+            </section>
 
-                    <div class="effects-panel">
-                        <h3>✨ Effects & Filters</h3>
-                        <div class="effect-categories">
-                            <button class="category-btn active" data-category="meme">Meme</button>
-                            <button class="category-btn" data-category="cinematic">Cinematic</button>
-                        </div>
-                        <div class="effect-grid" id="effectGrid"></div>
+            <!-- Controls Section -->
+            <section class="controls-section">
+                <!-- Camera Controls -->
+                <div class="control-panel">
+                    <h3>📸 Camera</h3>
+                    <div class="camera-controls">
+                        <button id="startCamera" class="btn btn-primary">Start Camera</button>
+                        <button id="capturePhoto" class="btn btn-secondary" disabled>Capture</button>
+                        <button id="captureStrip" class="btn btn-secondary" disabled>3-Strip</button>
+                        <input type="file" id="uploadPhoto" accept="image/*" style="display: none;">
+                        <button id="uploadBtn" class="btn btn-outline">Upload</button>
+                    </div>
+                    <video id="video" class="camera-preview" style="display: none;"></video>
+                    <div id="countdown" class="countdown"></div>
+                    <div id="palmDetection" class="palm-detection">
+                        <p>Show your palm to start timer ✋</p>
+                        <div class="detection-status" id="detectionStatus"></div>
                     </div>
                 </div>
 
-                <div class="control-section">
+                <!-- Layout Controls -->
+                <div class="control-panel">
                     <h3>🎨 Layout</h3>
-                    <div class="layout-controls">
-                        <label><input type="radio" name="layout" value="single" checked> Single</label>
-                        <label><input type="radio" name="layout" value="strip"> 3-Strip</label>
+                    <div class="layout-grid">
+                        <label class="layout-option">
+                            <input type="radio" name="layout" value="single" checked>
+                            <div class="layout-preview single"></div>
+                            <span>Single</span>
+                        </label>
+                        <label class="layout-option">
+                            <input type="radio" name="layout" value="strip">
+                            <div class="layout-preview strip"></div>
+                            <span>3-Strip</span>
+                        </label>
                     </div>
                 </div>
 
-                <div class="control-section">
-                    <h3>📝 Caption</h3>
-                    <input type="text" id="captionInput" placeholder="Enter caption...">
+                <!-- Effects & Filters -->
+                <div class="control-panel">
+                    <h3>✨ Effects & Filters</h3>
+                    <div class="effect-categories">
+                        <button class="category-btn active" data-category="cinematic">🎬 Cinematic</button>
+                        <button class="category-btn" data-category="meme">😄 Fun</button>
+                        <button class="category-btn" data-category="vintage">📼 Vintage</button>
+                    </div>
+                    <div class="effect-grid" id="effectGrid"></div>
                 </div>
 
-                <div class="control-section">
-                    <h3>🔤 Fonts & Styles</h3>
-                    <div class="font-grid">
-                        <div class="font-option" data-font="Arial">Arial</div>
-                        <div class="font-option" data-font="Creepster">Spooky</div>
-                        <div class="font-option" data-font="Eater">Ghost</div>
-                        <div class="font-option" data-font="Orbitron">Discord</div>
-                        <div class="font-option" data-font="Courier New">Typewriter</div>
-                        <div class="font-option" data-font="Impact">Impact</div>
-                        <div class="font-option" data-font="Comic Sans MS">Comic</div>
-                        <div class="font-option" data-font="Times New Roman">Classic</div>
-                        <div class="font-option" data-font="Georgia">Elegant</div>
-                        <div class="font-option" data-font="Verdana">Modern</div>
-                        <div class="font-option" data-font="Trebuchet MS">Clean</div>
-                        <div class="font-option" data-font="Brush Script MT">Script</div>
-                    </div>
-                    <div class="text-controls">
-                        <label>Size: <input type="range" id="fontSizeSlider" min="12" max="48" value="18"></label>
-                        <label>Color: <input type="color" id="textColorPicker" value="#000000"></label>
-                    </div>
-                </div>
-
-                <div class="control-section">
-                    <h3>🖼️ Frame Colors</h3>
+                <!-- Frames -->
+                <div class="control-panel">
+                    <h3>🖼️ Frames</h3>
                     <div class="frame-grid" id="frameGrid"></div>
                 </div>
 
-                <div class="control-section">
+                <!-- Caption -->
+                <div class="control-panel">
+                    <h3>📝 Caption</h3>
+                    <input type="text" id="captionInput" placeholder="Add your caption..." class="caption-input">
+                    <div class="caption-controls">
+                        <div class="font-selector" id="fontSelector"></div>
+                        <div class="text-controls">
+                            <label>Size: <input type="range" id="fontSizeSlider" min="12" max="48" value="18"></label>
+                            <label>Color: <input type="color" id="textColorPicker" value="#000000"></label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Stickers -->
+                <div class="control-panel">
                     <h3>🎭 Stickers</h3>
                     <div class="sticker-controls">
-                        <button id="clearStickers">Clear All Stickers</button>
-                        <label>
-                            <input type="checkbox" id="bottomAreaOnly"> Bottom area only
+                        <button id="clearStickers" class="btn btn-warning">Clear All</button>
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="bottomAreaOnly">
+                            <span>Bottom area only</span>
                         </label>
                     </div>
                     <div class="sticker-grid" id="stickerGrid"></div>
                 </div>
 
-                <div class="control-section">
+                <!-- Export -->
+                <div class="control-panel">
                     <h3>💾 Export</h3>
-                    <button id="downloadBtn">Download Polaroid</button>
+                    <button id="downloadBtn" class="btn btn-success btn-large">Download Polaroid</button>
                 </div>
-            </div>
-
-            <div class="preview-panel">
-                <div class="canvas-container">
-                    <canvas id="polaroidCanvas" width="400" height="500"></canvas>
-                </div>
-            </div>
-        </div>
+            </section>
+        </main>
     </div>
 
-    <script src="script.js"></script>
+    <script src="polaroid.js"></script>
 </body>
 </html>
