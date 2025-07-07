@@ -908,7 +908,6 @@ body {
     border-top: 4px solid var(--accent-primary);
     border-radius: 50%;
     animation: spin 1s linear infinite;
-    margin-bottom: 1rem;
 }
 
 @keyframes spin {
@@ -917,10 +916,9 @@ body {
 }
 
 .loading-overlay p {
+    margin-top: 1rem;
     color: var(--text-primary);
-    font-size: 1.125rem;
-    font-weight: 500;
-    text-align: center;
+    font-size: 1rem;
 }
 
 /* Mobile Responsive */
@@ -934,75 +932,52 @@ body {
         padding: 1rem;
     }
     
-    .canvas-container {
-        padding: 1rem;
-    }
-    
     .controls-section {
         max-height: none;
     }
     
     .camera-controls {
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: repeat(2, 1fr);
     }
     
     .effect-categories {
         justify-content: center;
     }
     
-    .effects-grid {
-        grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
-    }
-    
-    .frames-grid {
-        grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
-    }
-    
-    .stickers-grid {
-        grid-template-columns: repeat(auto-fit, minmax(35px, 1fr));
-    }
-    
     .toast {
         right: 10px;
         left: 10px;
         max-width: none;
-        transform: translateY(-100px);
+        transform: translateX(0) translateY(-100px);
     }
     
     .toast.show {
-        transform: translateY(0);
+        transform: translateX(0) translateY(0);
     }
 }
 
 @media (max-width: 480px) {
-    .header-content {
-        padding: 0 1rem;
-    }
-    
-    .brand-title {
+    .header-brand h1 {
         font-size: 1.25rem;
     }
     
-    .camera-controls {
-        grid-template-columns: 1fr;
+    .brand-icon {
+        width: 2rem;
+        height: 2rem;
+        font-size: 1rem;
     }
     
-    .layout-options {
-        grid-template-columns: 1fr;
+    .canvas-container {
+        padding: 1rem;
     }
     
-    .caption-controls {
-        flex-direction: column;
+    .strip-slots {
         gap: 0.5rem;
     }
     
-    .font-size-control {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 0.5rem;
-    }
-    
-    .size-slider {
-        width: 100%;
+    .strip-slot {
+        width: 50px;
+        height: 50px;
+        font-size: 1.25rem;
     }
 }
