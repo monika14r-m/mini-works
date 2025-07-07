@@ -1,11 +1,10 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>📸 Polaroid Editor - Create Stunning Instant Photos</title>
-    <meta name="description" content="Transform your photos with stunning effects, frames, and filters. Mobile-friendly polaroid photo editor with glass-morphism design.">
+    <title>📸 Polaroid Studio - Professional Photo Editor</title>
+    <meta name="description" content="Create stunning polaroid photos with 15+ cinema effects, 3-strip mode, palm detection timer, and professional frames. Mobile-friendly design.">
     <link rel="stylesheet" href="style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -14,13 +13,13 @@
 </head>
 <body data-theme="dark">
     <!-- Header -->
-    <header class="glass-morphism sticky top-0 z-50 px-4 py-3 lg:px-6">
+    <header class="glass-morphism sticky top-0 z-50 px-4 py-3">
         <div class="header-content">
             <div class="header-brand">
                 <div class="brand-icon">
                     <i class="fas fa-camera"></i>
                 </div>
-                <h1 class="brand-title">Polaroid Editor</h1>
+                <h1 class="brand-title">Polaroid Studio</h1>
             </div>
             <button id="themeToggle" class="theme-toggle">
                 <i class="fas fa-sun"></i>
@@ -31,11 +30,40 @@
     <!-- Main Content -->
     <main class="main-content">
         <div class="content-container">
-            <!-- Canvas/Preview Section -->
+            <!-- Preview Section -->
             <div class="preview-section">
                 <div class="canvas-wrapper">
                     <div class="canvas-container">
+                        <!-- Main Canvas -->
                         <canvas id="polaroidCanvas" width="400" height="500"></canvas>
+                        
+                        <!-- Strip Mode Canvases -->
+                        <div id="stripContainer" class="strip-container hidden">
+                            <canvas id="stripCanvas" width="400" height="600"></canvas>
+                            <div class="strip-previews">
+                                <div class="strip-preview-item" data-index="0">
+                                    <video id="stripVideo1" class="strip-video" autoplay playsinline muted></video>
+                                    <div class="strip-placeholder">
+                                        <i class="fas fa-camera"></i>
+                                        <span>Photo 1</span>
+                                    </div>
+                                </div>
+                                <div class="strip-preview-item" data-index="1">
+                                    <video id="stripVideo2" class="strip-video" autoplay playsinline muted></video>
+                                    <div class="strip-placeholder">
+                                        <i class="fas fa-camera"></i>
+                                        <span>Photo 2</span>
+                                    </div>
+                                </div>
+                                <div class="strip-preview-item" data-index="2">
+                                    <video id="stripVideo3" class="strip-video" autoplay playsinline muted></video>
+                                    <div class="strip-placeholder">
+                                        <i class="fas fa-camera"></i>
+                                        <span>Photo 3</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                         
                         <!-- Upload Overlay -->
                         <div id="uploadOverlay" class="upload-overlay">
@@ -49,63 +77,70 @@
                         </div>
                         
                         <!-- Camera Preview -->
-                        <video id="videoPreview" class="camera-preview" autoplay playsinline></video>
-
+                        <video id="videoPreview" class="camera-preview" autoplay playsinline muted></video>
+                        
+                        <!-- Countdown Timer -->
+                        <div id="countdownTimer" class="countdown-timer">
+                            <div class="countdown-number">3</div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
             <!-- Controls Section -->
             <div class="controls-section">
+                <!-- Layout Mode -->
+                <div class="control-panel">
+                    <h3 class="panel-title">
+                        <i class="fas fa-th-large"></i>
+                        Layout Mode
+                    </h3>
+                    <div class="layout-options">
+                        <button id="singleMode" class="layout-btn active">
+                            <div class="layout-preview single-preview"></div>
+                            <span>Single Photo</span>
+                        </button>
+                        <button id="stripMode" class="layout-btn">
+                            <div class="layout-preview strip-preview-layout"></div>
+                            <span>3-Strip Vertical</span>
+                        </button>
+                    </div>
+                </div>
+
                 <!-- Camera Controls -->
                 <div class="control-panel">
                     <h3 class="panel-title">
                         <i class="fas fa-camera"></i>
-                        Camera
+                        Camera Controls
                     </h3>
                     <div class="camera-controls">
                         <button id="startCamera" class="btn btn-primary">
-                            <i class="fas fa-video"></i>Start Camera
+                            <i class="fas fa-video"></i>
+                            Start Camera
                         </button>
                         <button id="capturePhoto" class="btn btn-secondary" disabled>
-                            <i class="fas fa-camera"></i>Capture
-                        </button>
-                        <button id="captureStrip" class="btn btn-secondary" disabled>
-                            <i class="fas fa-images"></i>3-Strip
+                            <i class="fas fa-camera"></i>
+                            Capture
                         </button>
                         <button id="uploadBtn" class="btn btn-outline">
-                            <i class="fas fa-upload"></i>Upload
+                            <i class="fas fa-upload"></i>
+                            Upload
+                        </button>
+                        <button id="resetBtn" class="btn btn-warning">
+                            <i class="fas fa-undo"></i>
+                            Reset
                         </button>
                     </div>
                     <input type="file" id="fileInput" accept="image/*" style="display: none;">
                     
-                    <!-- Palm Detection -->
+                    <!-- Palm Detection Indicator -->
                     <div id="palmDetection" class="palm-detection">
                         <i class="fas fa-hand-paper"></i>
-                        <p>Show your palm to start timer</p>
-                    </div>
-                </div>
-
-                <!-- Layout Options -->
-                <div class="control-panel">
-                    <h3 class="panel-title">
-                        <i class="fas fa-th-large"></i>
-                        Layout
-                    </h3>
-                    <div class="layout-options">
-                        <label class="layout-option active">
-                            <input type="radio" name="layout" value="single" checked>
-                            <div class="layout-preview">
-                                <div class="layout-single"></div>
-                            </div>
-                            <span>Single</span>
-                        </label>
-                        <label class="layout-option">
-                            <input type="radio" name="layout" value="strip">
-                            <div class="layout-preview">
-                                <div class="layout-strip"></div>
-                            </div>
-                            <span>3-Strip</span>
-                        </label>
+                        <p>Show your palm to start 3-second timer</p>
+                        <div class="palm-status">
+                            <div class="palm-indicator"></div>
+                            <span id="palmStatus">Looking for palm...</span>
+                        </div>
                     </div>
                 </div>
 
@@ -113,21 +148,107 @@
                 <div class="control-panel">
                     <h3 class="panel-title">
                         <i class="fas fa-magic"></i>
-                        Effects & Filters
+                        Cinema Effects & Filters
                     </h3>
                     <div class="effect-categories">
-                        <button class="effect-category-btn active" data-category="cinematic">
-                            🎬 Cinematic
-                        </button>
-                        <button class="effect-category-btn" data-category="meme">
-                            😄 Fun
+                        <button class="effect-category-btn active" data-category="cinema">
+                            🎬 Cinema
                         </button>
                         <button class="effect-category-btn" data-category="vintage">
                             📼 Vintage
                         </button>
+                        <button class="effect-category-btn" data-category="artistic">
+                            🎨 Artistic
+                        </button>
+                        <button class="effect-category-btn" data-category="fun">
+                            🎉 Fun
+                        </button>
                     </div>
                     <div id="effectsGrid" class="effects-grid">
-                        <!-- Dynamic effects will be inserted here -->
+                        <!-- Cinema Effects -->
+                        <button class="effect-btn active" data-effect="none" data-category="cinema">
+                            <span class="effect-icon">📷</span>
+                            <span class="effect-name">Original</span>
+                        </button>
+                        <button class="effect-btn" data-effect="matrix" data-category="cinema">
+                            <span class="effect-icon">💊</span>
+                            <span class="effect-name">Matrix</span>
+                        </button>
+                        <button class="effect-btn" data-effect="film-noir" data-category="cinema">
+                            <span class="effect-icon">🎬</span>
+                            <span class="effect-name">Film Noir</span>
+                        </button>
+                        <button class="effect-btn" data-effect="teal-orange" data-category="cinema">
+                            <span class="effect-icon">🎭</span>
+                            <span class="effect-name">Cinematic</span>
+                        </button>
+                        <button class="effect-btn" data-effect="cyberpunk" data-category="cinema">
+                            <span class="effect-icon">🤖</span>
+                            <span class="effect-name">Cyberpunk</span>
+                        </button>
+                        <button class="effect-btn" data-effect="blade-runner" data-category="cinema">
+                            <span class="effect-icon">🌃</span>
+                            <span class="effect-name">Blade Runner</span>
+                        </button>
+                        <!-- Vintage Effects -->
+                        <button class="effect-btn" data-effect="vintage-film" data-category="vintage">
+                            <span class="effect-icon">📼</span>
+                            <span class="effect-name">Vintage Film</span>
+                        </button>
+                        <button class="effect-btn" data-effect="sepia" data-category="vintage">
+                            <span class="effect-icon">🟫</span>
+                            <span class="effect-name">Sepia</span>
+                        </button>
+                        <button class="effect-btn" data-effect="retro-80s" data-category="vintage">
+                            <span class="effect-icon">📺</span>
+                            <span class="effect-name">Retro 80s</span>
+                        </button>
+                        <button class="effect-btn" data-effect="polaroid-classic" data-category="vintage">
+                            <span class="effect-icon">📸</span>
+                            <span class="effect-name">Classic</span>
+                        </button>
+                        <!-- Artistic Effects -->
+                        <button class="effect-btn" data-effect="soft-blur" data-category="artistic">
+                            <span class="effect-icon">🌸</span>
+                            <span class="effect-name">Soft Blur</span>
+                        </button>
+                        <button class="effect-btn" data-effect="dreamy-haze" data-category="artistic">
+                            <span class="effect-icon">☁️</span>
+                            <span class="effect-name">Dreamy Haze</span>
+                        </button>
+                        <button class="effect-btn" data-effect="golden-hour" data-category="artistic">
+                            <span class="effect-icon">🌅</span>
+                            <span class="effect-name">Golden Hour</span>
+                        </button>
+                        <button class="effect-btn" data-effect="sunset-vibes" data-category="artistic">
+                            <span class="effect-icon">🌇</span>
+                            <span class="effect-name">Sunset Vibes</span>
+                        </button>
+                        <button class="effect-btn" data-effect="moody-dark" data-category="artistic">
+                            <span class="effect-icon">🌙</span>
+                            <span class="effect-name">Moody Dark</span>
+                        </button>
+                        <button class="effect-btn" data-effect="pastel-dream" data-category="artistic">
+                            <span class="effect-icon">🦄</span>
+                            <span class="effect-name">Pastel Dream</span>
+                        </button>
+                        <button class="effect-btn" data-effect="vaporwave" data-category="artistic">
+                            <span class="effect-icon">🌈</span>
+                            <span class="effect-name">Vaporwave</span>
+                        </button>
+                        <!-- Fun Effects -->
+                        <button class="effect-btn" data-effect="happy-birthday" data-category="fun">
+                            <span class="effect-icon">🎂</span>
+                            <span class="effect-name">Birthday</span>
+                        </button>
+                        <button class="effect-btn" data-effect="neon-glow" data-category="fun">
+                            <span class="effect-icon">💡</span>
+                            <span class="effect-name">Neon Glow</span>
+                        </button>
+                        <button class="effect-btn" data-effect="pop-art" data-category="fun">
+                            <span class="effect-icon">🎨</span>
+                            <span class="effect-name">Pop Art</span>
+                        </button>
                     </div>
                 </div>
 
@@ -135,78 +256,81 @@
                 <div class="control-panel">
                     <h3 class="panel-title">
                         <i class="fas fa-border-style"></i>
-                        Frames
+                        Polaroid Frames
                     </h3>
-                    <div id="framesGrid" class="frames-grid">
-                        <!-- Dynamic frames will be inserted here -->
+                    <div class="frames-grid">
+                        <button class="frame-btn active" data-frame="classic">Classic</button>
+                        <button class="frame-btn" data-frame="vintage">Vintage</button>
+                        <button class="frame-btn" data-frame="modern">Modern</button>
+                        <button class="frame-btn" data-frame="film">Film Strip</button>
+                        <button class="frame-btn" data-frame="instant">Instant</button>
+                        <button class="frame-btn" data-frame="retro">Retro</button>
                     </div>
                 </div>
 
-                <!-- Caption -->
+                <!-- Caption Controls -->
                 <div class="control-panel">
                     <h3 class="panel-title">
                         <i class="fas fa-font"></i>
-                        Caption
+                        Caption & Text
                     </h3>
-                    <input type="text" id="captionInput" placeholder="Add your caption..." class="caption-input">
                     <div class="caption-controls">
-                        <select id="fontSelect" class="font-select">
-                            <option value="Inter">Modern</option>
-                            <option value="Creepster">Spooky</option>
-                            <option value="Orbitron">Sci-Fi</option>
-                            <option value="Courier Prime">Typewriter</option>
-                            <option value="Bungee">Bold</option>
-                        </select>
-                        <input type="color" id="textColor" value="#ffffff" class="color-picker">
-                    </div>
-                    <div class="font-size-control">
-                        <label>Size</label>
-                        <input type="range" id="fontSize" min="12" max="48" value="18" class="size-slider">
-                        <span id="fontSizeValue">18px</span>
-                    </div>
-                </div>
-
-                <!-- Stickers -->
-                <div class="control-panel">
-                    <h3 class="panel-title">
-                        <i class="fas fa-smile"></i>
-                        Stickers
-                    </h3>
-                    <div class="sticker-controls">
-                        <label class="checkbox-label">
-                            <input type="checkbox" id="bottomAreaOnly">
-                            <span class="checkmark"></span>
-                            Bottom area only
-                        </label>
-                        <div class="sticker-buttons">
-                            <button id="undoStickers" class="btn btn-secondary">
-                                <i class="fas fa-undo"></i>Undo
-                            </button>
-                            <button id="clearStickers" class="btn btn-warning">
-                                <i class="fas fa-trash"></i>Clear All
-                            </button>
+                        <input type="text" id="captionInput" placeholder="Add your caption..." class="caption-input">
+                        <div class="caption-settings">
+                            <select id="fontSelect" class="font-select">
+                                <option value="Inter">Modern</option>
+                                <option value="Creepster">Spooky</option>
+                                <option value="Orbitron">Sci-Fi</option>
+                                <option value="Courier Prime">Typewriter</option>
+                                <option value="Bungee">Bold</option>
+                            </select>
+                            <input type="color" id="textColor" value="#ffffff" class="color-picker">
+                        </div>
+                        <div class="font-size-control">
+                            <label>Size: <span id="fontSizeValue">18px</span></label>
+                            <input type="range" id="fontSize" min="12" max="48" value="18" class="size-slider">
                         </div>
                     </div>
-                    <div id="stickersGrid" class="stickers-grid">
-                        <!-- Dynamic stickers will be inserted here -->
+                </div>
+
+                <!-- Adjustments -->
+                <div class="control-panel">
+                    <h3 class="panel-title">
+                        <i class="fas fa-sliders-h"></i>
+                        Adjustments
+                    </h3>
+                    <div class="adjustments">
+                        <div class="adjustment-control">
+                            <label>Contrast: <span id="contrastValue">100%</span></label>
+                            <input type="range" id="contrastSlider" min="50" max="200" value="100" class="adjustment-slider">
+                        </div>
+                        <div class="adjustment-control">
+                            <label>Brightness: <span id="brightnessValue">100%</span></label>
+                            <input type="range" id="brightnessSlider" min="50" max="200" value="100" class="adjustment-slider">
+                        </div>
+                        <div class="adjustment-control">
+                            <label>Saturation: <span id="saturationValue">100%</span></label>
+                            <input type="range" id="saturationSlider" min="0" max="200" value="100" class="adjustment-slider">
+                        </div>
                     </div>
                 </div>
 
-                <!-- Export -->
+                <!-- Export Controls -->
                 <div class="control-panel">
                     <h3 class="panel-title">
                         <i class="fas fa-download"></i>
                         Export
                     </h3>
                     <button id="downloadBtn" class="btn btn-success btn-large">
-                        <i class="fas fa-download"></i>Download Polaroid
+                        <i class="fas fa-download"></i>
+                        Download Polaroid
                     </button>
                 </div>
             </div>
         </div>
     </main>
 
-    <!-- Toast Notification -->
+    <!-- Toast Notifications -->
     <div id="toast" class="toast">
         <div class="toast-content">
             <i class="toast-icon"></i>
