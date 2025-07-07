@@ -1,881 +1,534 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Creepster&family=Orbitron:wght@400;700&family=Courier+Prime&family=Bungee&display=swap');
-
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
-:root {
-    /* Dark theme colors */
-    --bg-primary: hsl(240, 50%, 3%);
-    --bg-secondary: hsl(240, 20%, 8%);
-    --bg-tertiary: hsl(240, 15%, 12%);
-    --bg-quaternary: hsl(240, 10%, 18%);
-    --text-primary: hsl(0, 0%, 98%);
-    --text-secondary: hsl(0, 0%, 88%);
-    --text-muted: hsl(0, 0%, 64%);
-    --accent-primary: hsl(248, 78%, 70%);
-    --accent-secondary: hsl(280, 45%, 60%);
-    --accent-gradient: linear-gradient(135deg, hsl(248, 78%, 70%) 0%, hsl(280, 45%, 60%) 100%);
-    --border: hsla(0, 0%, 100%, 0.1);
-    --shadow: hsla(0, 0%, 0%, 0.3);
-    --success: hsl(142, 71%, 58%);
-    --warning: hsl(25, 95%, 62%);
-    --danger: hsl(0, 73%, 70%);
-    --glass-bg: hsla(0, 0%, 100%, 0.05);
-    --glass-border: hsla(0, 0%, 100%, 0.1);
-}
-
-[data-theme="light"] {
-    --bg-primary: hsl(0, 0%, 98%);
-    --bg-secondary: hsl(0, 0%, 100%);
-    --bg-tertiary: hsl(218, 27%, 96%);
-    --bg-quaternary: hsl(220, 13%, 91%);
-    --text-primary: hsl(220, 39%, 11%);
-    --text-secondary: hsl(215, 25%, 27%);
-    --text-muted: hsl(215, 16%, 47%);
-    --accent-primary: hsl(213, 94%, 68%);
-    --accent-secondary: hsl(262, 83%, 58%);
-    --accent-gradient: linear-gradient(135deg, hsl(213, 94%, 68%) 0%, hsl(262, 83%, 58%) 100%);
-    --border: hsla(0, 0%, 0%, 0.1);
-    --shadow: hsla(0, 0%, 0%, 0.1);
-    --glass-bg: hsla(0, 0%, 0%, 0.02);
-    --glass-border: hsla(0, 0%, 0%, 0.05);
-}
-
-body {
-    font-family: 'Inter', sans-serif;
-    background: var(--bg-primary);
-    color: var(--text-primary);
-    line-height: 1.6;
-    overflow-x: hidden;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    min-height: 100vh;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.header {
-    background: var(--bg-secondary);
-    backdrop-filter: blur(20px);
-    border-bottom: 1px solid var(--border);
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    padding: 1rem 1.5rem;
-}
-
-.header-content {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    max-width: 1400px;
-    margin: 0 auto;
-}
-
-.header-brand {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-}
-
-.brand-icon {
-    width: 2.5rem;
-    height: 2.5rem;
-    background: var(--accent-gradient);
-    border-radius: 0.75rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-size: 1.125rem;
-}
-
-.brand-title {
-    font-size: 1.5rem;
-    font-weight: 700;
-    background: var(--accent-gradient);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-}
-
-.theme-toggle {
-    background: var(--glass-bg);
-    border: 1px solid var(--border);
-    color: var(--text-primary);
-    padding: 0.5rem 1rem;
-    border-radius: 0.75rem;
-    cursor: pointer;
-    font-size: 1.125rem;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    backdrop-filter: blur(10px);
-    min-width: 44px;
-    min-height: 44px;
-}
-
-.theme-toggle:hover {
-    background: var(--accent-primary);
-    transform: scale(1.05);
-}
-
-.main-content {
-    display: grid;
-    grid-template-columns: 1fr 400px;
-    gap: 2rem;
-    padding: 2rem;
-    max-width: 1400px;
-    margin: 0 auto;
-    width: 100%;
-}
-
-.preview-section {
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    padding: 2rem 0;
-}
-
-.canvas-container {
-    position: relative;
-    background: var(--bg-secondary);
-    border: 1px solid var(--border);
-    border-radius: 1.25rem;
-    padding: 2rem;
-    box-shadow: 0 25px 50px -12px var(--shadow);
-    backdrop-filter: blur(20px);
-    transition: all 0.3s ease;
-}
-
-.canvas-container:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 35px 60px -12px var(--shadow);
-}
-
-#polaroidCanvas {
-    max-width: 100%;
-    height: auto;
-    border-radius: 0.75rem;
-    box-shadow: 0 10px 25px -5px var(--shadow);
-    transition: all 0.3s ease;
-}
-
-.upload-overlay {
-    position: absolute;
-    top: 2rem;
-    left: 2rem;
-    right: 2rem;
-    bottom: 2rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 0.75rem;
-    transition: opacity 0.3s ease;
-    background: hsla(0, 0%, 0%, 0.3);
-    backdrop-filter: blur(4px);
-    cursor: pointer;
-}
-
-.upload-overlay.hidden {
-    opacity: 0;
-    pointer-events: none;
-}
-
-.upload-prompt {
-    text-align: center;
-    padding: 3rem;
-    border: 2px dashed var(--border);
-    border-radius: 0.75rem;
-    background: var(--glass-bg);
-    backdrop-filter: blur(10px);
-    transition: all 0.3s ease;
-}
-
-.upload-prompt:hover {
-    border-color: var(--accent-primary);
-    background: var(--glass-border);
-    transform: scale(1.02);
-}
-
-.upload-icon {
-    width: 4rem;
-    height: 4rem;
-    background: var(--accent-gradient);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto 1rem;
-    color: white;
-    font-size: 1.5rem;
-}
-
-.upload-prompt h3 {
-    font-size: 1.25rem;
-    font-weight: 600;
-    margin-bottom: 0.5rem;
-    color: var(--text-primary);
-}
-
-.upload-prompt p {
-    color: var(--text-muted);
-}
-
-.camera-preview {
-    position: absolute;
-    top: 2rem;
-    left: 2rem;
-    right: 2rem;
-    bottom: 2rem;
-    width: calc(100% - 4rem);
-    height: calc(100% - 4rem);
-    object-fit: cover;
-    border-radius: 0.75rem;
-    transform: scaleX(-1);
-    display: none;
-}
-
-.camera-preview.active {
-    display: block;
-}
-
-.countdown-timer {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    background: hsla(0, 0%, 0%, 0.5);
-    backdrop-filter: blur(4px);
-    border-radius: 0.75rem;
-}
-
-.countdown-timer.active {
-    display: flex;
-}
-
-.countdown-number {
-    font-size: 4rem;
-    font-weight: 700;
-    color: var(--accent-primary);
-    text-shadow: 0 0 20px currentColor;
-    animation: pulse 1s infinite;
-}
-
-@keyframes pulse {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.1); }
-}
-
-.controls-section {
-    background: var(--bg-secondary);
-    border: 1px solid var(--border);
-    border-radius: 1.25rem;
-    padding: 1.5rem;
-    height: fit-content;
-    max-height: 80vh;
-    overflow-y: auto;
-    backdrop-filter: blur(20px);
-}
-
-.control-panel {
-    margin-bottom: 2rem;
-    padding-bottom: 2rem;
-    border-bottom: 1px solid var(--border);
-}
-
-.control-panel:last-child {
-    border-bottom: none;
-    margin-bottom: 0;
-}
-
-.panel-title {
-    font-size: 1.125rem;
-    font-weight: 600;
-    margin-bottom: 1rem;
-    color: var(--text-primary);
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.panel-title i {
-    color: var(--accent-primary);
-}
-
-.camera-controls {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-    gap: 0.75rem;
-    margin-bottom: 1rem;
-}
-
-.btn {
-    padding: 0.75rem 1rem;
-    border: none;
-    border-radius: 0.75rem;
-    font-size: 0.875rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    text-align: center;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    backdrop-filter: blur(10px);
-    min-height: 44px;
-}
-
-.btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-    transform: none !important;
-}
-
-.btn-primary {
-    background: var(--accent-gradient);
-    color: white;
-}
-
-.btn-secondary {
-    background: var(--bg-tertiary);
-    color: var(--text-primary);
-    border: 1px solid var(--border);
-}
-
-.btn-outline {
-    background: transparent;
-    color: var(--text-primary);
-    border: 1px solid var(--border);
-}
-
-.btn-success {
-    background: var(--success);
-    color: white;
-}
-
-.btn-warning {
-    background: var(--warning);
-    color: white;
-}
-
-.btn-large {
-    padding: 1rem 2rem;
-    font-size: 1rem;
-    font-weight: 600;
-}
-
-.btn:hover:not(:disabled) {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 25px -5px var(--shadow);
-}
-
-.palm-detection {
-    display: none;
-    background: var(--glass-bg);
-    border: 1px solid var(--border);
-    border-radius: 0.75rem;
-    padding: 1rem;
-    text-align: center;
-}
-
-.palm-detection.active {
-    display: block;
-}
-
-.palm-detection i {
-    font-size: 2rem;
-    color: var(--success);
-    margin-bottom: 0.5rem;
-}
-
-.palm-detection p {
-    font-size: 0.875rem;
-    color: var(--text-muted);
-}
-
-.layout-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1rem;
-}
-
-.layout-option {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 1rem;
-    border: 1px solid var(--border);
-    border-radius: 0.75rem;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    background: var(--glass-bg);
-}
-
-.layout-option:hover {
-    border-color: var(--accent-primary);
-    background: var(--glass-border);
-}
-
-.layout-option input {
-    display: none;
-}
-
-.layout-option input:checked + .layout-preview {
-    border-color: var(--accent-primary);
-    background: var(--accent-primary);
-}
-
-.layout-preview {
-    width: 40px;
-    height: 50px;
-    border: 2px solid var(--border);
-    border-radius: 0.375rem;
-    transition: all 0.3s ease;
-    position: relative;
-    overflow: hidden;
-}
-
-.layout-single {
-    width: 100%;
-    height: 100%;
-    background: var(--bg-tertiary);
-}
-
-.layout-strip {
-    width: 100%;
-    height: 100%;
-    background: repeating-linear-gradient(
-        to bottom,
-        var(--bg-tertiary) 0px,
-        var(--bg-tertiary) 14px,
-        var(--border) 14px,
-        var(--border) 16px
-    );
-}
-
-.effect-categories {
-    display: flex;
-    gap: 0.5rem;
-    margin-bottom: 1rem;
-    flex-wrap: wrap;
-}
-
-.category-btn {
-    padding: 0.5rem 1rem;
-    background: var(--bg-tertiary);
-    border: 1px solid var(--border);
-    border-radius: 0.5rem;
-    color: var(--text-primary);
-    cursor: pointer;
-    transition: all 0.3s ease;
-    font-size: 0.875rem;
-    white-space: nowrap;
-    min-height: 44px;
-}
-
-.category-btn.active {
-    background: var(--accent-gradient);
-    color: white;
-    border-color: var(--accent-primary);
-}
-
-.category-btn:hover {
-    transform: translateY(-1px);
-}
-
-.effects-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
-    gap: 0.75rem;
-    max-height: 200px;
-    overflow-y: auto;
-}
-
-.effect-option {
-    aspect-ratio: 1;
-    background: var(--bg-tertiary);
-    border: 1px solid var(--border);
-    border-radius: 0.75rem;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    font-size: 0.75rem;
-    text-align: center;
-    padding: 0.5rem;
-    gap: 0.25rem;
-    min-height: 44px;
-}
-
-.effect-option:hover {
-    transform: translateY(-2px);
-    border-color: var(--accent-primary);
-    background: var(--glass-border);
-}
-
-.effect-option.active {
-    background: var(--accent-gradient);
-    color: white;
-    border-color: var(--accent-primary);
-}
-
-.effect-icon {
-    font-size: 1.5rem;
-}
-
-.frames-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
-    gap: 0.75rem;
-    max-height: 150px;
-    overflow-y: auto;
-}
-
-.frame-option {
-    aspect-ratio: 1;
-    border: 2px solid transparent;
-    border-radius: 0.75rem;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    position: relative;
-    min-height: 44px;
-    min-width: 44px;
-}
-
-.frame-option:hover {
-    transform: scale(1.05);
-    border-color: var(--accent-primary);
-}
-
-.frame-option.active {
-    border-color: var(--accent-primary);
-    box-shadow: 0 0 0 2px var(--accent-primary);
-}
-
-.caption-input {
-    width: 100%;
-    padding: 0.75rem;
-    background: var(--bg-tertiary);
-    border: 1px solid var(--border);
-    border-radius: 0.75rem;
-    color: var(--text-primary);
-    font-size: 1rem;
-    margin-bottom: 1rem;
-    transition: all 0.3s ease;
-}
-
-.caption-input:focus {
-    outline: none;
-    border-color: var(--accent-primary);
-    background: var(--glass-border);
-}
-
-.caption-controls {
-    display: grid;
-    grid-template-columns: 1fr auto;
-    gap: 0.75rem;
-    margin-bottom: 1rem;
-}
-
-.font-select {
-    background: var(--bg-tertiary);
-    border: 1px solid var(--border);
-    border-radius: 0.5rem;
-    color: var(--text-primary);
-    padding: 0.5rem 0.75rem;
-    font-size: 0.875rem;
-    cursor: pointer;
-}
-
-.color-picker {
-    width: 3rem;
-    height: 2.5rem;
-    border: 1px solid var(--border);
-    border-radius: 0.5rem;
-    cursor: pointer;
-    background: transparent;
-}
-
-.font-size-control {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-}
-
-.font-size-control label {
-    font-size: 0.875rem;
-    color: var(--text-muted);
-}
-
-.size-slider {
-    width: 100%;
-    height: 0.5rem;
-    background: var(--bg-tertiary);
-    border-radius: 0.25rem;
-    outline: none;
-    cursor: pointer;
-}
-
-.sticker-controls {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1rem;
-    flex-wrap: wrap;
-    gap: 1rem;
-}
-
-.checkbox-label {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    cursor: pointer;
-    font-size: 0.875rem;
-}
-
-.checkbox-label input[type="checkbox"] {
-    width: 1rem;
-    height: 1rem;
-    accent-color: var(--accent-primary);
-}
-
-.stickers-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(40px, 1fr));
-    gap: 0.5rem;
-    max-height: 150px;
-    overflow-y: auto;
-}
-
-.sticker-option {
-    aspect-ratio: 1;
-    background: var(--bg-tertiary);
-    border: 1px solid var(--border);
-    border-radius: 0.5rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    font-size: 1.5rem;
-    min-height: 44px;
-    min-width: 44px;
-    user-select: none;
-}
-
-.sticker-option:hover {
-    transform: scale(1.1);
-    background: var(--glass-border);
-    border-color: var(--accent-primary);
-}
-
-.hidden {
-    display: none;
-}
-
-/* Custom scrollbar */
-::-webkit-scrollbar {
-    width: 8px;
-}
-
-::-webkit-scrollbar-track {
-    background: var(--bg-tertiary);
-    border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb {
-    background: var(--accent-primary);
-    border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-    background: var(--accent-secondary);
-}
-
-/* Responsive Design */
-@media (max-width: 1024px) {
-    .main-content {
-        grid-template-columns: 1fr;
-        gap: 1.5rem;
-        padding: 1.5rem;
+// Application State
+let currentImage = null;
+let currentLayout = 'single';
+let currentFrame = 'classic-white';
+let selectedEffects = [];
+let currentCaption = '';
+let currentFont = 'Inter';
+let currentFontSize = 18;
+let currentTextColor = '#ffffff';
+let stickers = [];
+let stream = null;
+let isDarkMode = true;
+let stripImages = [];
+let stripIndex = 0;
+let bottomAreaOnly = false;
+let canvas, ctx;
+
+// Effects and Frames Data
+const effects = {
+    cinematic: [
+        { id: 'blade-runner', name: 'Blade Runner', icon: '🌆' },
+        { id: 'matrix', name: 'Matrix', icon: '🔢' },
+        { id: 'noir', name: 'Film Noir', icon: '🎭' },
+        { id: 'cyberpunk', name: 'Cyberpunk', icon: '📺' },
+        { id: 'tron', name: 'Tron', icon: '🔷' },
+        { id: 'mad-max', name: 'Mad Max', icon: '💥' },
+        { id: 'alien', name: 'Alien', icon: '🛸' },
+        { id: 'terminator', name: 'Terminator', icon: '🎯' },
+        { id: 'interstellar', name: 'Interstellar', icon: '⭐' }
+    ],
+    meme: [
+        { id: 'deep-fried', name: 'Deep Fried', icon: '🍟' },
+        { id: 'laser-eyes', name: 'Laser Eyes', icon: '🔴' },
+        { id: 'glowing', name: 'Glowing', icon: '🌟' },
+        { id: 'rainbow', name: 'Rainbow', icon: '🌈' },
+        { id: 'vaporwave', name: 'Vaporwave', icon: '💜' },
+        { id: 'neon', name: 'Neon', icon: '✨' },
+        { id: 'holographic', name: 'Holo', icon: '💎' },
+        { id: 'pixel', name: 'Pixel Art', icon: '🎮' },
+        { id: 'comic', name: 'Comic', icon: '💥' }
+    ],
+    vintage: [
+        { id: 'vintage-film', name: 'Film', icon: '📹' },
+        { id: 'sepia', name: 'Sepia', icon: '🟤' },
+        { id: 'polaroid-fade', name: 'Fade', icon: '📸' },
+        { id: 'film-grain', name: 'Grain', icon: '⚪' },
+        { id: 'light-leaks', name: 'Light Leaks', icon: '🌅' },
+        { id: 'cross-process', name: 'Cross Process', icon: '🎨' },
+        { id: 'lomography', name: 'Lomo', icon: '🔴' },
+        { id: 'instant', name: 'Instant', icon: '⬜' },
+        { id: 'super8', name: 'Super 8', icon: '🎥' }
+    ]
+};
+
+const frames = [
+    { id: 'classic-white', colors: ['#ffffff', '#f5f5f5'], name: 'Classic White' },
+    { id: 'sunset-orange', colors: ['#ff6b35', '#f7931e'], name: 'Sunset Orange' },
+    { id: 'ocean-blue', colors: ['#1e3a8a', '#3b82f6'], name: 'Ocean Blue' },
+    { id: 'forest-green', colors: ['#059669', '#10b981'], name: 'Forest Green' },
+    { id: 'royal-purple', colors: ['#7c3aed', '#a855f7'], name: 'Royal Purple' },
+    { id: 'cherry-red', colors: ['#dc2626', '#ef4444'], name: 'Cherry Red' },
+    { id: 'golden-yellow', colors: ['#d97706', '#f59e0b'], name: 'Golden Yellow' },
+    { id: 'hot-pink', colors: ['#ec4899', '#f472b6'], name: 'Hot Pink' },
+    { id: 'mint-green', colors: ['#06b6d4', '#67e8f9'], name: 'Mint Green' },
+    { id: 'lavender', colors: ['#8b5cf6', '#c4b5fd'], name: 'Lavender' },
+    { id: 'coral-peach', colors: ['#fb7185', '#fda4af'], name: 'Coral Peach' },
+    { id: 'emerald', colors: ['#059669', '#34d399'], name: 'Emerald' },
+    { id: 'midnight-black', colors: ['#000000', '#1f1f1f'], name: 'Midnight Black' },
+    { id: 'silver-chrome', colors: ['#c0c0c0', '#e5e5e5'], name: 'Silver Chrome' },
+    { id: 'rainbow', colors: ['#ff0000', '#ff7f00', '#ffff00', '#00ff00', '#0000ff', '#4b0082', '#9400d3'], name: 'Rainbow' }
+];
+
+const stickerEmojis = [
+    '😀', '😃', '😄', '😁', '😆', '😅', '😂', '🤣', '😊', '😇',
+    '🙂', '🙃', '😉', '😌', '😍', '🥰', '😘', '😗', '😙', '😚',
+    '😋', '😛', '😝', '😜', '🤪', '🤨', '🧐', '🤓', '😎', '🤩',
+    '🥳', '😏', '😒', '😞', '😔', '😟', '😕', '🙁', '☹️', '😣',
+    '🔥', '💯', '💥', '⭐', '🌟', '✨', '🎉', '🎊', '💫', '🌈',
+    '☀️', '🌙', '⚡', '❄️', '🌊', '💎', '🎭', '🎪', '🎨', '🎬'
+];
+
+// Initialize Application
+document.addEventListener('DOMContentLoaded', function() {
+    initializeApp();
+    setupEventListeners();
+    renderEffects();
+    renderFrames();
+    renderStickers();
+    drawCanvas();
+    loadTheme();
+});
+
+function initializeApp() {
+    canvas = document.getElementById('polaroidCanvas');
+    ctx = canvas.getContext('2d');
+    
+    // Adjust canvas size for mobile
+    adjustCanvasSize();
+    
+    // Set initial theme
+    updateTheme();
+}
+
+function adjustCanvasSize() {
+    const container = canvas.parentElement;
+    const containerWidth = container.clientWidth - 96; // Account for padding
+    const isMobile = window.innerWidth < 768;
+    
+    let canvasWidth = isMobile ? Math.min(300, containerWidth) : Math.min(400, containerWidth);
+    let canvasHeight = (canvasWidth * 5) / 4; // 4:5 ratio for polaroid
+    
+    canvas.style.maxWidth = `${canvasWidth}px`;
+    canvas.style.maxHeight = `${canvasHeight}px`;
+}
+
+function setupEventListeners() {
+    // Theme toggle
+    document.getElementById('themeToggle').addEventListener('click', toggleTheme);
+    
+    // Camera controls
+    document.getElementById('startCamera').addEventListener('click', startCamera);
+    document.getElementById('capturePhoto').addEventListener('click', capturePhoto);
+    document.getElementById('captureStrip').addEventListener('click', captureStrip);
+    document.getElementById('uploadBtn').addEventListener('click', () => {
+        document.getElementById('fileInput').click();
+    });
+    
+    // File input
+    document.getElementById('fileInput').addEventListener('change', handleFileUpload);
+    
+    // Upload overlay
+    document.getElementById('uploadOverlay').addEventListener('click', () => {
+        document.getElementById('fileInput').click();
+    });
+    
+    // Drag and drop
+    setupDragAndDrop();
+    
+    // Layout controls
+    document.querySelectorAll('input[name="layout"]').forEach(radio => {
+        radio.addEventListener('change', (e) => {
+            currentLayout = e.target.value;
+            drawCanvas();
+        });
+    });
+    
+    // Caption controls
+    document.getElementById('captionInput').addEventListener('input', (e) => {
+        currentCaption = e.target.value;
+        drawCanvas();
+    });
+    
+    document.getElementById('fontSelect').addEventListener('change', (e) => {
+        currentFont = e.target.value;
+        drawCanvas();
+    });
+    
+    document.getElementById('fontSize').addEventListener('input', (e) => {
+        currentFontSize = parseInt(e.target.value);
+        drawCanvas();
+    });
+    
+    document.getElementById('textColor').addEventListener('change', (e) => {
+        currentTextColor = e.target.value;
+        drawCanvas();
+    });
+    
+    // Download button
+    document.getElementById('downloadBtn').addEventListener('click', downloadImage);
+    
+    // Clear stickers
+    document.getElementById('clearStickers').addEventListener('click', clearStickers);
+    
+    // Bottom area only checkbox
+    document.getElementById('bottomAreaOnly').addEventListener('change', (e) => {
+        bottomAreaOnly = e.target.checked;
+    });
+    
+    // Window resize
+    window.addEventListener('resize', () => {
+        adjustCanvasSize();
+        drawCanvas();
+    });
+    
+    // Canvas click for sticker placement
+    canvas.addEventListener('click', handleCanvasClick);
+}
+
+function setupDragAndDrop() {
+    const dropZone = document.getElementById('uploadOverlay');
+    
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        dropZone.addEventListener(eventName, preventDefaults, false);
+        document.body.addEventListener(eventName, preventDefaults, false);
+    });
+    
+    function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
     }
     
-    .preview-section {
-        order: 1;
+    ['dragenter', 'dragover'].forEach(eventName => {
+        dropZone.addEventListener(eventName, highlight, false);
+    });
+    
+    ['dragleave', 'drop'].forEach(eventName => {
+        dropZone.addEventListener(eventName, unhighlight, false);
+    });
+    
+    function highlight(e) {
+        dropZone.style.backgroundColor = 'rgba(102, 126, 234, 0.2)';
     }
     
-    .controls-section {
-        order: 2;
-        max-height: 60vh;
+    function unhighlight(e) {
+        dropZone.style.backgroundColor = '';
+    }
+    
+    dropZone.addEventListener('drop', handleDrop, false);
+    
+    function handleDrop(e) {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        
+        if (files.length > 0) {
+            handleFile(files[0]);
+        }
     }
 }
 
-@media (max-width: 768px) {
-    .main-content {
-        padding: 1rem;
-        gap: 1rem;
-    }
-    
-    .canvas-container {
-        padding: 1.5rem;
-    }
-    
-    .camera-controls {
-        grid-template-columns: 1fr;
-        gap: 0.5rem;
-    }
-    
-    .layout-grid {
-        grid-template-columns: 1fr 1fr;
-    }
-    
-    .effect-categories {
-        justify-content: center;
-        gap: 0.25rem;
-    }
-    
-    .category-btn {
-        flex: 1;
-        min-width: 0;
-        font-size: 0.75rem;
-        padding: 0.5rem;
-    }
-    
-    .effects-grid {
-        grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
-        max-height: 160px;
-    }
-    
-    .frames-grid {
-        grid-template-columns: repeat(auto-fill, minmax(40px, 1fr));
-        max-height: 120px;
-    }
-    
-    .stickers-grid {
-        grid-template-columns: repeat(auto-fill, minmax(35px, 1fr));
-        max-height: 120px;
-    }
-    
-    .brand-title {
-        font-size: 1.25rem;
-    }
-    
-    .countdown-number {
-        font-size: 3rem;
-    }
-    
-    .caption-controls {
-        grid-template-columns: 1fr;
-        gap: 0.5rem;
-    }
-    
-    .color-picker {
-        width: 100%;
-        height: 2.5rem;
+function handleFileUpload(e) {
+    const file = e.target.files[0];
+    if (file) {
+        handleFile(file);
     }
 }
 
-@media (max-width: 480px) {
-    .main-content {
-        padding: 0.75rem;
+function handleFile(file) {
+    if (!file.type.startsWith('image/')) {
+        alert('Please select an image file (JPG, PNG, WebP)');
+        return;
     }
     
-    .canvas-container {
-        padding: 1rem;
-    }
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+            currentImage = img;
+            hideUploadOverlay();
+            drawCanvas();
+        };
+        img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+}
+
+function hideUploadOverlay() {
+    document.getElementById('uploadOverlay').classList.add('hidden');
+}
+
+function showUploadOverlay() {
+    document.getElementById('uploadOverlay').classList.remove('hidden');
+}
+
+function toggleTheme() {
+    isDarkMode = !isDarkMode;
+    updateTheme();
+    saveTheme();
+}
+
+function updateTheme() {
+    document.body.setAttribute('data-theme', isDarkMode ? 'dark' : 'light');
     
-    .controls-section {
-        padding: 1rem;
-        max-height: 50vh;
-    }
-    
-    .brand-title {
-        font-size: 1.125rem;
-    }
-    
-    .countdown-number {
-        font-size: 2.5rem;
-    }
-    
-    .btn {
-        padding: 0.625rem 0.75rem;
-        font-size: 0.8rem;
-    }
-    
-    .btn-large {
-        padding: 0.875rem 1rem;
-        font-size: 0.9rem;
-    }
-    
-    .effect-categories {
-        gap: 0.25rem;
-    }
-    
-    .category-btn {
-        font-size: 0.7rem;
-        padding: 0.375rem 0.5rem;
+    const themeIcon = document.querySelector('#themeToggle i');
+    themeIcon.className = isDarkMode ? 'fas fa-sun' : 'fas fa-moon';
+}
+
+function saveTheme() {
+    localStorage.setItem('polaroid-theme', isDarkMode ? 'dark' : 'light');
+}
+
+function loadTheme() {
+    const savedTheme = localStorage.getItem('polaroid-theme');
+    if (savedTheme) {
+        isDarkMode = savedTheme === 'dark';
+        updateTheme();
     }
 }
 
-/* Touch device optimizations */
-@media (hover: none) and (pointer: coarse) {
-    .btn, .effect-option, .frame-option, .sticker-option, .layout-option {
-        min-height: 44px;
-        min-width: 44px;
+async function startCamera() {
+    try {
+        stream = await navigator.mediaDevices.getUserMedia({ 
+            video: { facingMode: 'user' } 
+        });
+        
+        const video = document.getElementById('videoPreview');
+        video.srcObject = stream;
+        video.classList.add('active');
+        hideUploadOverlay();
+        
+        // Enable capture buttons
+        document.getElementById('capturePhoto').disabled = false;
+        document.getElementById('captureStrip').disabled = false;
+        
+        // Show palm detection
+        document.getElementById('palmDetection').classList.add('active');
+        
+    } catch (err) {
+        console.error('Camera access denied:', err);
+        alert('Camera access denied. Please allow camera access or use the upload option instead.');
+    }
+}
+
+function capturePhoto() {
+    const video = document.getElementById('videoPreview');
+    if (video.srcObject) {
+        // Show countdown
+        showCountdown(() => {
+            const tempCanvas = document.createElement('canvas');
+            const tempCtx = tempCanvas.getContext('2d');
+            tempCanvas.width = video.videoWidth;
+            tempCanvas.height = video.videoHeight;
+            
+            // Flip image horizontally to match preview
+            tempCtx.scale(-1, 1);
+            tempCtx.drawImage(video, -tempCanvas.width, 0);
+            
+            const img = new Image();
+            img.onload = () => {
+                currentImage = img;
+                video.classList.remove('active');
+                stopCamera();
+                drawCanvas();
+            };
+            img.src = tempCanvas.toDataURL();
+        });
+    }
+}
+
+function captureStrip() {
+    const video = document.getElementById('videoPreview');
+    if (video.srcObject) {
+        stripImages = [];
+        stripIndex = 0;
+        currentLayout = 'strip';
+        document.querySelector('input[value="strip"]').checked = true;
+        
+        captureStripPhoto();
+    }
+}
+
+function captureStripPhoto() {
+    const video = document.getElementById('videoPreview');
+    if (stripIndex < 3) {
+        showCountdown(() => {
+            const tempCanvas = document.createElement('canvas');
+            const tempCtx = tempCanvas.getContext('2d');
+            tempCanvas.width = video.videoWidth;
+            tempCanvas.height = video.videoHeight;
+            
+            // Flip image horizontally to match preview
+            tempCtx.scale(-1, 1);
+            tempCtx.drawImage(video, -tempCanvas.width, 0);
+            
+            const img = new Image();
+            img.onload = () => {
+                stripImages.push(img);
+                stripIndex++;
+                
+                if (stripIndex < 3) {
+                    setTimeout(() => captureStripPhoto(), 1000);
+                } else {
+                    currentImage = stripImages;
+                    video.classList.remove('active');
+                    stopCamera();
+                    drawCanvas();
+                }
+            };
+            img.src = tempCanvas.toDataURL();
+        });
+    }
+}
+
+function showCountdown(callback) {
+    const countdownEl = document.getElementById('countdownTimer');
+    const numberEl = countdownEl.querySelector('.countdown-number');
+    
+    let count = 3;
+    countdownEl.classList.add('active');
+    
+    const countdownInterval = setInterval(() => {
+        numberEl.textContent = count;
+        count--;
+        
+        if (count < 0) {
+            clearInterval(countdownInterval);
+            countdownEl.classList.remove('active');
+            callback();
+        }
+    }, 1000);
+}
+
+function stopCamera() {
+    if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+        stream = null;
     }
     
-    .category-btn {
-        min-height: 44px;
-        padding: 0.75rem 1rem;
+    document.getElementById('capturePhoto').disabled = true;
+    document.getElementById('captureStrip').disabled = true;
+    document.getElementById('palmDetection').classList.remove('active');
+}
+
+function renderEffects() {
+    const effectsGrid = document.getElementById('effectsGrid');
+    const categoryBtns = document.querySelectorAll('.category-btn');
+    
+    // Handle category switching
+    categoryBtns.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            categoryBtns.forEach(b => {
+                b.classList.remove('active');
+            });
+            btn.classList.add('active');
+            
+            const category = btn.dataset.category;
+            renderEffectCategory(category);
+        });
+    });
+    
+    // Initial render
+    renderEffectCategory('cinematic');
+    
+    function renderEffectCategory(category) {
+        effectsGrid.innerHTML = '';
+        effects[category].forEach(effect => {
+            const effectElement = document.createElement('div');
+            effectElement.className = 'effect-option';
+            effectElement.innerHTML = `
+                <div class="effect-icon">${effect.icon}</div>
+                <div class="effect-name">${effect.name}</div>
+            `;
+            effectElement.addEventListener('click', () => {
+                // Toggle effect
+                const index = selectedEffects.indexOf(effect.id);
+                if (index > -1) {
+                    selectedEffects.splice(index, 1);
+                    effectElement.classList.remove('active');
+                } else {
+                    selectedEffects.push(effect.id);
+                    effectElement.classList.add('active');
+                }
+                drawCanvas();
+            });
+            
+            // Check if effect is already selected
+            if (selectedEffects.includes(effect.id)) {
+                effectElement.classList.add('active');
+            }
+            
+            effectsGrid.appendChild(effectElement);
+        });
     }
 }
 
-/* Animations */
-@keyframes slideInUp {
-    from {
-        transform: translateY(20px);
-        opacity: 0;
-    }
-    to {
-        transform: translateY(0);
-        opacity: 1;
-    }
+function renderFrames() {
+    const framesGrid = document.getElementById('framesGrid');
+    frames.forEach(frame => {
+        const frameElement = document.createElement('div');
+        frameElement.className = 'frame-option';
+        frameElement.title = frame.name;
+        
+        if (frame.colors.length === 1) {
+            frameElement.style.backgroundColor = frame.colors[0];
+        } else {
+            frameElement.style.background = `linear-gradient(135deg, ${frame.colors.join(', ')})`;
+        }
+        
+        frameElement.addEventListener('click', () => {
+            document.querySelectorAll('.frame-option').forEach(el => {
+                el.classList.remove('active');
+            });
+            frameElement.classList.add('active');
+            currentFrame = frame.id;
+            drawCanvas();
+        });
+        
+        // Set default frame
+        if (frame.id === currentFrame) {
+            frameElement.classList.add('active');
+        }
+        
+        framesGrid.appendChild(frameElement);
+    });
 }
 
-.control-panel {
-    animation: slideInUp 0.3s ease-out;
+function renderStickers() {
+    const stickersGrid = document.getElementById('stickersGrid');
+    stickerEmojis.forEach(emoji => {
+        const stickerElement = document.createElement('div');
+        stickerElement.className = 'sticker-option';
+        stickerElement.textContent = emoji;
+        stickerElement.addEventListener('click', () => {
+            addSticker(emoji);
+        });
+        stickersGrid.appendChild(stickerElement);
+    });
 }
 
-/* Loading states */
-.loading {
-    opacity: 0.6;
-    pointer-events: none;
+function addSticker(emoji) {
+    const canvasRect = canvas.getBoundingClientRect();
+    const x = Math.random() * (canvas.width - 50);
+    const y = bottomAreaOnly ? 
+        Math.random() * (canvas.height * 0.2) + (canvas.height * 0.8) :
+        Math.random() * (canvas.height - 50);
+    
+    stickers.push({
+        emoji: emoji,
+        x: x,
+        y: y,
+        size: 30 + Math.random() * 20
+    });
+    
+    drawCanvas();
 }
 
-.loading::after {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 20px;
-    height: 20px;
-    border: 2px solid var(--border);
-    border-top: 2px solid var(--accent-primary);
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
+function clearStickers() {
+    stickers = [];
+    drawCanvas();
 }
 
-@keyframes spin {
-    0% { transform: translate(-50%, -50%) rotate(0deg); }
-    100% { transform: translate(-50%, -50%) rotate(360deg); }
-}
+function handleCanvasClick(e) {
+    // This could be expanded to handle sticker repositioning
+    const rect = canvas.getBoundingClientRect();
+    const x = (e.clientX - rect.left) * (canvas.width / rect.width
