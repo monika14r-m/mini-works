@@ -15,16 +15,28 @@
 
         <div class="container">
             <div class="controls-panel">
-                <div class="control-section">
-                    <h3>📸 Capture</h3>
-                    <div class="camera-controls">
-                        <button id="startCamera">Start Camera</button>
-                        <button id="capturePhoto" disabled>Capture Photo</button>
-                        <input type="file" id="uploadPhoto" accept="image/*" style="display: none;">
-                        <button id="uploadBtn">Upload Photo</button>
+                <div class="capture-effects-section">
+                    <div class="capture-panel">
+                        <h3>📸 Capture</h3>
+                        <div class="camera-controls">
+                            <button id="startCamera">Start Camera</button>
+                            <button id="capturePhoto" disabled>Capture Photo</button>
+                            <button id="captureStrip" disabled>Capture 3-Strip</button>
+                            <input type="file" id="uploadPhoto" accept="image/*" style="display: none;">
+                            <button id="uploadBtn">Upload Photo</button>
+                        </div>
+                        <video id="video" width="200" height="150" style="display: none;"></video>
+                        <div id="countdown" class="countdown"></div>
                     </div>
-                    <video id="video" width="200" height="150" style="display: none;"></video>
-                    <div id="countdown" class="countdown"></div>
+
+                    <div class="effects-panel">
+                        <h3>✨ Effects & Filters</h3>
+                        <div class="effect-categories">
+                            <button class="category-btn active" data-category="meme">Meme</button>
+                            <button class="category-btn" data-category="cinematic">Cinematic</button>
+                        </div>
+                        <div class="effect-grid" id="effectGrid"></div>
+                    </div>
                 </div>
 
                 <div class="control-section">
@@ -36,35 +48,45 @@
                 </div>
 
                 <div class="control-section">
-                    <h3>🖼️ Frames</h3>
+                    <h3>📝 Caption</h3>
+                    <input type="text" id="captionInput" placeholder="Enter caption...">
+                </div>
+
+                <div class="control-section">
+                    <h3>🔤 Fonts & Styles</h3>
+                    <div class="font-grid">
+                        <div class="font-option" data-font="Arial">Arial</div>
+                        <div class="font-option" data-font="Creepster">Spooky</div>
+                        <div class="font-option" data-font="Eater">Ghost</div>
+                        <div class="font-option" data-font="Orbitron">Discord</div>
+                        <div class="font-option" data-font="Courier New">Typewriter</div>
+                        <div class="font-option" data-font="Impact">Impact</div>
+                        <div class="font-option" data-font="Comic Sans MS">Comic</div>
+                        <div class="font-option" data-font="Times New Roman">Classic</div>
+                        <div class="font-option" data-font="Georgia">Elegant</div>
+                        <div class="font-option" data-font="Verdana">Modern</div>
+                        <div class="font-option" data-font="Trebuchet MS">Clean</div>
+                        <div class="font-option" data-font="Brush Script MT">Script</div>
+                    </div>
+                    <div class="text-controls">
+                        <label>Size: <input type="range" id="fontSizeSlider" min="12" max="48" value="18"></label>
+                        <label>Color: <input type="color" id="textColorPicker" value="#000000"></label>
+                    </div>
+                </div>
+
+                <div class="control-section">
+                    <h3>🖼️ Frame Colors</h3>
                     <div class="frame-grid" id="frameGrid"></div>
                 </div>
 
                 <div class="control-section">
-                    <h3>✨ Effects</h3>
-                    <div class="effect-categories">
-                        <button class="category-btn active" data-category="meme">Meme</button>
-                        <button class="category-btn" data-category="cinematic">Cinematic</button>
-                    </div>
-                    <div class="effect-grid" id="effectGrid"></div>
-                </div>
-
-                <div class="control-section">
-                    <h3>📝 Caption</h3>
-                    <input type="text" id="captionInput" placeholder="Enter caption...">
-                    <select id="fontSelect">
-                        <option value="Arial">Arial</option>
-                        <option value="Creepster">Spooky</option>
-                        <option value="Eater">Ghost</option>
-                        <option value="Orbitron">Discord</option>
-                        <option value="Courier New">Typewriter</option>
-                    </select>
-                    <input type="range" id="fontSizeSlider" min="12" max="36" value="18">
-                    <input type="color" id="textColorPicker" value="#000000">
-                </div>
-
-                <div class="control-section">
                     <h3>🎭 Stickers</h3>
+                    <div class="sticker-controls">
+                        <button id="clearStickers">Clear All Stickers</button>
+                        <label>
+                            <input type="checkbox" id="bottomAreaOnly"> Bottom area only
+                        </label>
+                    </div>
                     <div class="sticker-grid" id="stickerGrid"></div>
                 </div>
 
