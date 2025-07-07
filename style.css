@@ -762,6 +762,12 @@ body {
     align-items: center;
     justify-content: space-between;
     margin-bottom: 1rem;
+    gap: 1rem;
+}
+
+.sticker-buttons {
+    display: flex;
+    gap: 0.5rem;
 }
 
 .checkbox-label {
