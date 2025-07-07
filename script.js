@@ -8,6 +8,7 @@ let currentFont = 'Inter';
 let currentFontSize = 18;
 let currentTextColor = '#ffffff';
 let stickers = [];
+let stickerHistory = []; // For undo functionality
 let stream = null;
 let isDarkMode = true;
 let stripImages = [null, null, null]; // Array for 3 strip images
@@ -34,6 +35,10 @@ const effects = {
     meme: [
         { id: 'deep-fried', name: 'Deep Fried', icon: '🍟' },
         { id: 'laser-eyes', name: 'Laser Eyes', icon: '🔴' },
+        { id: 'cool-glasses', name: 'Cool Glasses', icon: '🕶️' },
+        { id: 'vampire-teeth', name: 'Vampire Teeth', icon: '🧛' },
+        { id: 'red-lights', name: 'Red Lights', icon: '🔴' },
+        { id: 'high-contrast', name: 'High Contrast', icon: '⚫' },
         { id: 'glowing', name: 'Glowing', icon: '🌟' },
         { id: 'rainbow', name: 'Rainbow', icon: '🌈' },
         { id: 'vaporwave', name: 'Vaporwave', icon: '💜' },
@@ -78,6 +83,7 @@ const stickerEmojis = [
     '🙂', '🙃', '😉', '😌', '😍', '🥰', '😘', '😗', '😙', '😚',
     '😋', '😛', '😝', '😜', '🤪', '🤨', '🧐', '🤓', '😎', '🤩',
     '🥳', '😏', '😒', '😞', '😔', '😟', '😕', '🙁', '☹️', '😣',
+    '🧛', '🧙', '👹', '💀', '👻', '🎃', '🦇', '🕷️', '🔮', '⚰️',
     '🔥', '💯', '💥', '⭐', '🌟', '✨', '🎉', '🎊', '💫', '🌈',
     '☀️', '🌙', '⚡', '❄️', '🌊', '💎', '🎭', '🎪', '🎨', '🎬'
 ];
@@ -191,6 +197,9 @@ function setupEventListeners() {
     
     // Clear stickers
     document.getElementById('clearStickers').addEventListener('click', clearStickers);
+    
+    // Undo stickers
+    document.getElementById('undoStickers').addEventListener('click', undoStickers);
     
     // Bottom area only checkbox
     document.getElementById('bottomAreaOnly').addEventListener('change', (e) => {
@@ -469,7 +478,6 @@ function captureStripSequence() {
                     img.onload = () => {
                         stripImages[slotIndex] = img;
                         drawCanvas();
-                        
                         slotIndex++;
                         
                         if (slotIndex < 3) {
@@ -605,6 +613,16 @@ function selectSticker(emoji) {
     showToast(`Click on the polaroid to place ${emoji}`, 'success');
 }
 
+function undoStickers() {
+    if (stickerHistory.length > 0) {
+        stickers = stickerHistory.pop();
+        drawCanvas();
+        showToast('Sticker placement undone', 'success');
+    } else {
+        showToast('No actions to undo', 'warning');
+    }
+}
+
 function handleCanvasClick(e) {
     const selectedSticker = canvas.dataset.selectedSticker;
     if (!selectedSticker) return;
@@ -620,6 +638,9 @@ function handleCanvasClick(e) {
     const isAllowedArea = checkStickerPlacement(x, y);
     
     if (isAllowedArea) {
+        // Save current state for undo
+        stickerHistory.push([...stickers]);
+        
         stickers.push({
             emoji: selectedSticker,
             x: x,
@@ -679,9 +700,15 @@ function checkStickerPlacement(x, y) {
 }
 
 function clearStickers() {
-    stickers = [];
-    drawCanvas();
-    showToast('All stickers cleared', 'success');
+    if (stickers.length > 0) {
+        // Save current state for undo
+        stickerHistory.push([...stickers]);
+        stickers = [];
+        drawCanvas();
+        showToast('All stickers cleared', 'success');
+    } else {
+        showToast('No stickers to clear', 'warning');
+    }
 }
 
 function drawCanvas() {
@@ -700,6 +727,11 @@ function drawCanvas() {
     
     // Draw stickers
     drawStickers();
+    
+    // Draw vampire teeth overlay if effect is active
+    if (selectedEffects.includes('vampire-teeth')) {
+        drawVampireTeethOverlay();
+    }
 }
 
 function drawSingleLayout() {
@@ -800,7 +832,10 @@ function drawFrame(x, y, width, height) {
     ctx.restore();
 }
 
-function drawImageToFit(image, x, y, width, height) {
+function drawImageToFit(imageSource, x, y, width, height) {
+    // Handle both Image objects and Canvas objects
+    const image = imageSource.tagName === 'CANVAS' ? imageSource : imageSource;
+    
     const imgAspect = image.width / image.height;
     const areaAspect = width / height;
     
@@ -875,6 +910,93 @@ function drawStickers() {
     });
 }
 
+function drawVampireTeethOverlay() {
+    if (currentLayout === 'strip') {
+        // Draw fangs on each strip that has an image
+        for (let i = 0; i < 3; i++) {
+            if (stripImages[i]) {
+                drawVampireFangsOnStrip(i);
+            }
+        }
+    } else {
+        // Single image - draw fangs in center
+        if (currentImage) {
+            drawVampireFangsSingle();
+        }
+    }
+}
+
+function drawVampireFangsSingle() {
+    const margin = 30;
+    const frameThickness = 20;
+    const imageArea = {
+        x: margin + frameThickness,
+        y: margin + frameThickness,
+        width: canvas.width - margin * 2 - frameThickness * 2,
+        height: canvas.height - margin * 2 - 60 - frameThickness * 2
+    };
+    
+    const centerX = imageArea.x + imageArea.width / 2;
+    const centerY = imageArea.y + imageArea.height * 0.6; // Lower in face area
+    
+    drawFangs(centerX, centerY);
+}
+
+function drawVampireFangsOnStrip(stripIndex) {
+    const margin = 20;
+    const stripWidth = (canvas.width - margin * 2 - 20) / 3;
+    const stripHeight = stripWidth * 1.2;
+    const x = margin + stripIndex * (stripWidth + 10);
+    const y = 40;
+    
+    const centerX = x + stripWidth / 2;
+    const centerY = y + stripHeight * 0.6;
+    
+    drawFangs(centerX, centerY, 0.7); // Smaller fangs for strips
+}
+
+function drawFangs(centerX, centerY, scale = 1) {
+    ctx.save();
+    
+    const size = 15 * scale;
+    const height = 20 * scale;
+    
+    // Draw left fang
+    ctx.fillStyle = '#ffffff';
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+    ctx.shadowBlur = 3;
+    ctx.shadowOffsetX = 1;
+    ctx.shadowOffsetY = 1;
+    
+    ctx.beginPath();
+    ctx.moveTo(centerX - size, centerY);
+    ctx.lineTo(centerX - size * 0.3, centerY + height);
+    ctx.lineTo(centerX - size * 1.5, centerY + height * 0.7);
+    ctx.closePath();
+    ctx.fill();
+    
+    // Draw right fang
+    ctx.beginPath();
+    ctx.moveTo(centerX + size, centerY);
+    ctx.lineTo(centerX + size * 0.3, centerY + height);
+    ctx.lineTo(centerX + size * 1.5, centerY + height * 0.7);
+    ctx.closePath();
+    ctx.fill();
+    
+    // Add red tint to tips
+    ctx.shadowColor = 'transparent';
+    ctx.fillStyle = '#ff4444';
+    ctx.beginPath();
+    ctx.arc(centerX - size * 0.3, centerY + height, 2 * scale, 0, Math.PI * 2);
+    ctx.fill();
+    
+    ctx.beginPath();
+    ctx.arc(centerX + size * 0.3, centerY + height, 2 * scale, 0, Math.PI * 2);
+    ctx.fill();
+    
+    ctx.restore();
+}
+
 function applyEffects(image) {
     if (selectedEffects.length === 0) return image;
     
@@ -889,9 +1011,12 @@ function applyEffects(image) {
         applyEffect(tempCtx, effectId, tempCanvas.width, tempCanvas.height);
     });
     
+    // Create a new image element and wait for it to load
     const processedImage = new Image();
     processedImage.src = tempCanvas.toDataURL();
-    return processedImage;
+    
+    // Return the canvas context directly for synchronous processing
+    return tempCanvas;
 }
 
 function applyEffect(ctx, effectId, width, height) {
@@ -984,6 +1109,140 @@ function applyEffect(ctx, effectId, width, height) {
                 data[i] = Math.min(255, data[i] * 0.5 + r * 0.5);
                 data[i + 1] = Math.min(255, data[i + 1] * 0.5 + g * 0.5);
                 data[i + 2] = Math.min(255, data[i + 2] * 0.5 + b * 0.5);
+            }
+            break;
+            
+        case 'cool-glasses':
+            // Apply dark tint and increase contrast
+            for (let i = 0; i < data.length; i += 4) {
+                data[i] = Math.min(255, data[i] * 0.7);
+                data[i + 1] = Math.min(255, data[i + 1] * 0.7);
+                data[i + 2] = Math.min(255, data[i + 2] * 0.7);
+            }
+            break;
+            
+        case 'laser-eyes':
+            // Add red tint
+            for (let i = 0; i < data.length; i += 4) {
+                data[i] = Math.min(255, data[i] * 1.5);
+                data[i + 1] = Math.min(255, data[i + 1] * 0.3);
+                data[i + 2] = Math.min(255, data[i + 2] * 0.3);
+            }
+            break;
+            
+        case 'glowing':
+            // Bright glow effect
+            for (let i = 0; i < data.length; i += 4) {
+                data[i] = Math.min(255, data[i] * 1.3);
+                data[i + 1] = Math.min(255, data[i + 1] * 1.3);
+                data[i + 2] = Math.min(255, data[i + 2] * 1.3);
+            }
+            break;
+            
+        case 'holographic':
+            // Iridescent effect
+            for (let i = 0; i < data.length; i += 4) {
+                const y = Math.floor((i / 4) / width);
+                const shift = Math.sin(y * 0.1) * 50;
+                data[i] = Math.min(255, data[i] + shift);
+                data[i + 1] = Math.min(255, data[i + 1] + shift * 0.5);
+                data[i + 2] = Math.min(255, data[i + 2] + shift * 1.5);
+            }
+            break;
+            
+        case 'pixel':
+            // Pixelate effect
+            const pixelSize = 8;
+            for (let y = 0; y < height; y += pixelSize) {
+                for (let x = 0; x < width; x += pixelSize) {
+                    const idx = (y * width + x) * 4;
+                    const r = data[idx];
+                    const g = data[idx + 1];
+                    const b = data[idx + 2];
+                    
+                    for (let py = 0; py < pixelSize && y + py < height; py++) {
+                        for (let px = 0; px < pixelSize && x + px < width; px++) {
+                            const pidx = ((y + py) * width + (x + px)) * 4;
+                            data[pidx] = r;
+                            data[pidx + 1] = g;
+                            data[pidx + 2] = b;
+                        }
+                    }
+                }
+            }
+            break;
+            
+        case 'comic':
+            // High contrast comic effect
+            for (let i = 0; i < data.length; i += 4) {
+                data[i] = data[i] > 128 ? 255 : 0;
+                data[i + 1] = data[i + 1] > 128 ? 255 : 0;
+                data[i + 2] = data[i + 2] > 128 ? 255 : 0;
+            }
+            break;
+            
+        case 'film-grain':
+            // Add film grain
+            for (let i = 0; i < data.length; i += 4) {
+                const noise = (Math.random() - 0.5) * 30;
+                data[i] = Math.max(0, Math.min(255, data[i] + noise));
+                data[i + 1] = Math.max(0, Math.min(255, data[i + 1] + noise));
+                data[i + 2] = Math.max(0, Math.min(255, data[i + 2] + noise));
+            }
+            break;
+            
+        case 'light-leaks':
+            // Add light leak effect
+            for (let i = 0; i < data.length; i += 4) {
+                const x = (i / 4) % width;
+                const y = Math.floor((i / 4) / width);
+                const distance = Math.sqrt(x * x + y * y);
+                const leak = Math.max(0, 100 - distance * 0.1);
+                data[i] = Math.min(255, data[i] + leak);
+                data[i + 1] = Math.min(255, data[i + 1] + leak * 0.8);
+                data[i + 2] = Math.min(255, data[i + 2] + leak * 0.6);
+            }
+            break;
+            
+        case 'high-contrast':
+            // Increase contrast dramatically
+            for (let i = 0; i < data.length; i += 4) {
+                const contrast = 2.0; // Contrast multiplier
+                const factor = (259 * (contrast + 255)) / (255 * (259 - contrast));
+                
+                data[i] = Math.max(0, Math.min(255, factor * (data[i] - 128) + 128));
+                data[i + 1] = Math.max(0, Math.min(255, factor * (data[i + 1] - 128) + 128));
+                data[i + 2] = Math.max(0, Math.min(255, factor * (data[i + 2] - 128) + 128));
+            }
+            break;
+            
+        case 'red-lights':
+            // Create red lighting effect
+            for (let i = 0; i < data.length; i += 4) {
+                const x = (i / 4) % width;
+                const y = Math.floor((i / 4) / width);
+                
+                // Create multiple red light sources
+                const light1 = Math.max(0, 150 - Math.sqrt((x - width * 0.3) ** 2 + (y - height * 0.3) ** 2) * 0.5);
+                const light2 = Math.max(0, 150 - Math.sqrt((x - width * 0.7) ** 2 + (y - height * 0.7) ** 2) * 0.5);
+                const redBoost = Math.max(light1, light2);
+                
+                data[i] = Math.min(255, data[i] + redBoost);
+                data[i + 1] = Math.min(255, data[i + 1] * 0.6);
+                data[i + 2] = Math.min(255, data[i + 2] * 0.6);
+            }
+            break;
+            
+        case 'vampire-teeth':
+            // Dark, dramatic effect with red accent
+            for (let i = 0; i < data.length; i += 4) {
+                // Darken overall image
+                data[i] = Math.min(255, data[i] * 0.8);
+                data[i + 1] = Math.min(255, data[i + 1] * 0.7);
+                data[i + 2] = Math.min(255, data[i + 2] * 0.7);
+                
+                // Add subtle red tint
+                data[i] = Math.min(255, data[i] + 20);
             }
             break;
             
