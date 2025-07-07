@@ -10,10 +10,13 @@ let currentTextColor = '#ffffff';
 let stickers = [];
 let stream = null;
 let isDarkMode = true;
-let stripImages = [];
+let stripImages = [null, null, null]; // Array for 3 strip images
 let stripIndex = 0;
+let activeStripSlot = 0;
 let bottomAreaOnly = false;
 let canvas, ctx;
+let isStripMode = false;
+let currentEffectCategory = 'cinematic';
 
 // Effects and Frames Data
 const effects = {
@@ -87,6 +90,13 @@ document.addEventListener('DOMContentLoaded', function() {
     renderFrames();
     renderStickers();
     drawCanvas();
+    
+    // Load saved theme
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme) {
+        isDarkMode = savedTheme === 'dark';
+        updateTheme();
+    }
 });
 
 function initializeApp() {
@@ -144,6 +154,16 @@ function setupEventListeners() {
         });
     });
     
+    // Effect category buttons
+    document.querySelectorAll('.effect-category-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            document.querySelectorAll('.effect-category-btn').forEach(b => b.classList.remove('active'));
+            e.target.classList.add('active');
+            currentEffectCategory = e.target.dataset.category;
+            renderEffects();
+        });
+    });
+    
     // Caption controls
     document.getElementById('captionInput').addEventListener('input', (e) => {
         currentCaption = e.target.value;
@@ -179,6 +199,14 @@ function setupEventListeners() {
     
     // Canvas click for sticker placement
     canvas.addEventListener('click', handleCanvasClick);
+    
+    // Strip slot selection
+    document.addEventListener('click', (e) => {
+        if (e.target.classList.contains('strip-slot')) {
+            const slotIndex = parseInt(e.target.dataset.slot);
+            selectStripSlot(slotIndex);
+        }
+    });
     
     // Window resize
     window.addEventListener('resize', () => {
@@ -246,7 +274,11 @@ function handleFile(file) {
     reader.onload = (e) => {
         const img = new Image();
         img.onload = () => {
-            currentImage = img;
+            if (currentLayout === 'strip') {
+                stripImages[activeStripSlot] = img;
+            } else {
+                currentImage = img;
+            }
             document.getElementById('uploadOverlay').classList.add('hidden');
             drawCanvas();
             showLoading(false);
@@ -274,6 +306,37 @@ function updateTheme() {
     
     // Save theme preference
     localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
+}
+
+function updateLayoutUI() {
+    const layoutOptions = document.querySelectorAll('.layout-option');
+    layoutOptions.forEach(option => {
+        option.classList.remove('active');
+        if (option.querySelector('input').value === currentLayout) {
+            option.classList.add('active');
+        }
+    });
+    
+    // Show/hide strip selector
+    const stripSelector = document.getElementById('stripSelector');
+    if (currentLayout === 'strip') {
+        stripSelector.classList.add('active');
+        isStripMode = true;
+    } else {
+        stripSelector.classList.remove('active');
+        isStripMode = false;
+    }
+}
+
+function selectStripSlot(slotIndex) {
+    activeStripSlot = slotIndex;
+    
+    // Update visual feedback
+    document.querySelectorAll('.strip-slot').forEach((slot, index) => {
+        slot.classList.toggle('active', index === slotIndex);
+    });
+    
+    showToast(`Selected slot ${slotIndex + 1}`, 'success');
 }
 
 function startCamera() {
@@ -323,7 +386,12 @@ function capturePhoto() {
         
         const img = new Image();
         img.onload = () => {
-            currentImage = img;
+            if (currentLayout === 'strip') {
+                stripImages[activeStripSlot] = img;
+            } else {
+                currentImage = img;
+            }
+            
             video.classList.remove('active');
             document.getElementById('uploadOverlay').classList.add('hidden');
             
@@ -347,209 +415,200 @@ function capturePhoto() {
 }
 
 function captureStrip() {
-    // Start countdown and capture multiple photos
-    let countdown = 3;
-    stripImages = [];
-    stripIndex = 0;
-    
-    const countdownTimer = document.getElementById('countdownTimer');
-    const countdownNumber = countdownTimer.querySelector('.countdown-number');
-    
-    countdownTimer.classList.add('active');
-    
-    const countdownInterval = setInterval(() => {
-        countdownNumber.textContent = countdown;
-        countdown--;
-        
-        if (countdown < 0) {
-            clearInterval(countdownInterval);
-            captureStripPhoto();
-        }
-    }, 1000);
-}
-
-function captureStripPhoto() {
-    const video = document.getElementById('videoPreview');
-    if (video.srcObject && stripIndex < 3) {
-        const tempCanvas = document.createElement('canvas');
-        const tempCtx = tempCanvas.getContext('2d');
-        tempCanvas.width = video.videoWidth;
-        tempCanvas.height = video.videoHeight;
-        
-        // Flip the image back to normal
-        tempCtx.scale(-1, 1);
-        tempCtx.drawImage(video, -tempCanvas.width, 0);
-        
-        const img = new Image();
-        img.onload = () => {
-            stripImages.push(img);
-            stripIndex++;
-            
-            if (stripIndex < 3) {
-                // Continue capturing
-                setTimeout(() => captureStripPhoto(), 1000);
-            } else {
-                // Finished capturing all photos
-                currentImage = stripImages;
-                currentLayout = 'strip';
-                document.querySelector('input[value="strip"]').checked = true;
-                updateLayoutUI();
-                
-                document.getElementById('videoPreview').classList.remove('active');
-                document.getElementById('countdownTimer').classList.remove('active');
-                document.getElementById('uploadOverlay').classList.add('hidden');
-                
-                // Stop camera stream
-                if (stream) {
-                    stream.getTracks().forEach(track => track.stop());
-                    stream = null;
-                }
-                
-                // Disable capture buttons
-                document.getElementById('capturePhoto').disabled = true;
-                document.getElementById('capturePhoto').classList.add('opacity-50');
-                document.getElementById('captureStrip').disabled = true;
-                document.getElementById('captureStrip').classList.add('opacity-50');
-                
-                drawCanvas();
-                showToast('Photo strip captured successfully!', 'success');
-            }
-        };
-        img.src = tempCanvas.toDataURL();
+    if (!stream) {
+        showToast('Please start the camera first', 'error');
+        return;
     }
+    
+    currentLayout = 'strip';
+    updateLayoutUI();
+    drawCanvas();
+    
+    // Auto-capture for all 3 slots with countdown
+    captureStripSequence();
 }
 
-function updateLayoutUI() {
-    const layoutOptions = document.querySelectorAll('.layout-option');
-    layoutOptions.forEach(option => {
-        const radio = option.querySelector('input');
-        if (radio.value === currentLayout) {
-            option.classList.add('active');
-        } else {
-            option.classList.remove('active');
+function captureStripSequence() {
+    let slotIndex = 0;
+    
+    function captureNextSlot() {
+        if (slotIndex >= 3) {
+            showToast('Strip capture complete!', 'success');
+            return;
         }
-    });
+        
+        selectStripSlot(slotIndex);
+        
+        // Countdown
+        let countdown = 3;
+        const countdownTimer = document.getElementById('countdownTimer');
+        const countdownNumber = countdownTimer.querySelector('.countdown-number');
+        
+        countdownTimer.classList.add('active');
+        
+        const countdownInterval = setInterval(() => {
+            countdownNumber.textContent = countdown;
+            countdown--;
+            
+            if (countdown < 0) {
+                clearInterval(countdownInterval);
+                countdownTimer.classList.remove('active');
+                
+                // Capture photo for current slot
+                const video = document.getElementById('videoPreview');
+                if (video.srcObject) {
+                    const tempCanvas = document.createElement('canvas');
+                    const tempCtx = tempCanvas.getContext('2d');
+                    tempCanvas.width = video.videoWidth;
+                    tempCanvas.height = video.videoHeight;
+                    
+                    tempCtx.scale(-1, 1);
+                    tempCtx.drawImage(video, -tempCanvas.width, 0);
+                    
+                    const img = new Image();
+                    img.onload = () => {
+                        stripImages[slotIndex] = img;
+                        drawCanvas();
+                        
+                        slotIndex++;
+                        
+                        if (slotIndex < 3) {
+                            setTimeout(() => captureNextSlot(), 1000);
+                        } else {
+                            // Stop camera after all captures
+                            if (stream) {
+                                stream.getTracks().forEach(track => track.stop());
+                                stream = null;
+                            }
+                            
+                            const video = document.getElementById('videoPreview');
+                            video.classList.remove('active');
+                            
+                            // Disable capture buttons
+                            document.getElementById('capturePhoto').disabled = true;
+                            document.getElementById('capturePhoto').classList.add('opacity-50');
+                            document.getElementById('captureStrip').disabled = true;
+                            document.getElementById('captureStrip').classList.add('opacity-50');
+                            
+                            showToast('Strip capture complete!', 'success');
+                        }
+                    };
+                    img.src = tempCanvas.toDataURL();
+                }
+            }
+        }, 1000);
+    }
+    
+    captureNextSlot();
 }
 
 function renderEffects() {
     const effectsGrid = document.getElementById('effectsGrid');
-    const categoryBtns = document.querySelectorAll('.effect-category-btn');
+    effectsGrid.innerHTML = '';
     
-    // Handle category switching
-    categoryBtns.forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            categoryBtns.forEach(b => {
-                b.classList.remove('active');
-            });
-            btn.classList.add('active');
-            
-            const category = btn.dataset.category;
-            renderEffectCategory(category);
-        });
+    const categoryEffects = effects[currentEffectCategory] || [];
+    
+    categoryEffects.forEach(effect => {
+        const effectEl = document.createElement('div');
+        effectEl.className = 'effect-option';
+        effectEl.dataset.effectId = effect.id;
+        
+        if (selectedEffects.includes(effect.id)) {
+            effectEl.classList.add('active');
+        }
+        
+        effectEl.innerHTML = `
+            <div class="effect-icon">${effect.icon}</div>
+            <div class="effect-name">${effect.name}</div>
+        `;
+        
+        effectEl.addEventListener('click', () => toggleEffect(effect.id));
+        effectsGrid.appendChild(effectEl);
     });
-    
-    // Initial render
-    renderEffectCategory('cinematic');
-    
-    function renderEffectCategory(category) {
-        effectsGrid.innerHTML = '';
-        effects[category].forEach(effect => {
-            const effectElement = document.createElement('div');
-            effectElement.className = 'effect-option';
-            effectElement.innerHTML = `
-                <div class="effect-icon">${effect.icon}</div>
-                <div>${effect.name}</div>
-            `;
-            effectElement.addEventListener('click', () => {
-                // Toggle effect
-                const index = selectedEffects.indexOf(effect.id);
-                if (index > -1) {
-                    selectedEffects.splice(index, 1);
-                    effectElement.classList.remove('active');
-                } else {
-                    selectedEffects.push(effect.id);
-                    effectElement.classList.add('active');
-                }
-                drawCanvas();
-            });
-            
-            // Check if effect is already selected
-            if (selectedEffects.includes(effect.id)) {
-                effectElement.classList.add('active');
-            }
-            
-            effectsGrid.appendChild(effectElement);
-        });
+}
+
+function toggleEffect(effectId) {
+    const index = selectedEffects.indexOf(effectId);
+    if (index > -1) {
+        selectedEffects.splice(index, 1);
+    } else {
+        selectedEffects.push(effectId);
     }
+    
+    renderEffects();
+    drawCanvas();
 }
 
 function renderFrames() {
     const framesGrid = document.getElementById('framesGrid');
+    framesGrid.innerHTML = '';
+    
     frames.forEach(frame => {
-        const frameElement = document.createElement('div');
-        frameElement.className = 'frame-option';
+        const frameEl = document.createElement('div');
+        frameEl.className = 'frame-option';
+        frameEl.dataset.frameId = frame.id;
         
-        if (frame.colors.length === 1) {
-            frameElement.style.backgroundColor = frame.colors[0];
+        if (currentFrame === frame.id) {
+            frameEl.classList.add('active');
+        }
+        
+        const previewEl = document.createElement('div');
+        previewEl.className = 'frame-preview';
+        
+        if (frame.colors.length > 1) {
+            previewEl.style.borderColor = frame.colors[0];
+            previewEl.style.background = `linear-gradient(45deg, ${frame.colors.join(', ')})`;
         } else {
-            frameElement.style.background = `linear-gradient(135deg, ${frame.colors.join(', ')})`;
+            previewEl.style.borderColor = frame.colors[0];
         }
         
-        frameElement.addEventListener('click', () => {
-            document.querySelectorAll('.frame-option').forEach(el => {
-                el.classList.remove('active');
-            });
-            frameElement.classList.add('active');
-            currentFrame = frame.id;
-            drawCanvas();
-        });
+        const nameEl = document.createElement('div');
+        nameEl.className = 'frame-name';
+        nameEl.textContent = frame.name;
         
-        // Set default frame
-        if (frame.id === currentFrame) {
-            frameElement.classList.add('active');
-        }
+        frameEl.appendChild(previewEl);
+        frameEl.appendChild(nameEl);
         
-        framesGrid.appendChild(frameElement);
+        frameEl.addEventListener('click', () => selectFrame(frame.id));
+        framesGrid.appendChild(frameEl);
     });
+}
+
+function selectFrame(frameId) {
+    currentFrame = frameId;
+    renderFrames();
+    drawCanvas();
 }
 
 function renderStickers() {
     const stickersGrid = document.getElementById('stickersGrid');
+    stickersGrid.innerHTML = '';
+    
     stickerEmojis.forEach(emoji => {
-        const stickerElement = document.createElement('div');
-        stickerElement.className = 'sticker-option';
-        stickerElement.textContent = emoji;
-        stickerElement.addEventListener('click', () => {
-            addSticker(emoji);
-        });
-        stickersGrid.appendChild(stickerElement);
+        const stickerEl = document.createElement('div');
+        stickerEl.className = 'sticker-option';
+        stickerEl.textContent = emoji;
+        stickerEl.dataset.emoji = emoji;
+        
+        stickerEl.addEventListener('click', () => selectSticker(emoji));
+        stickersGrid.appendChild(stickerEl);
     });
 }
 
-function addSticker(emoji) {
-    const canvasRect = canvas.getBoundingClientRect();
-    const x = Math.random() * (canvas.width - 50);
-    const y = bottomAreaOnly ? 
-        Math.random() * (canvas.height * 0.3) + (canvas.height * 0.7) :
-        Math.random() * (canvas.height - 50);
+function selectSticker(emoji) {
+    document.body.style.cursor = 'crosshair';
+    canvas.style.cursor = 'crosshair';
     
-    stickers.push({
-        emoji: emoji,
-        x: x,
-        y: y,
-        size: 30 + Math.random() * 20
-    });
+    // Store selected sticker for placement
+    canvas.dataset.selectedSticker = emoji;
     
-    drawCanvas();
-}
-
-function clearStickers() {
-    stickers = [];
-    drawCanvas();
-    showToast('Stickers cleared', 'success');
+    showToast(`Click on the polaroid to place ${emoji}`, 'success');
 }
 
 function handleCanvasClick(e) {
+    const selectedSticker = canvas.dataset.selectedSticker;
+    if (!selectedSticker) return;
+    
     const rect = canvas.getBoundingClientRect();
     const scaleX = canvas.width / rect.width;
     const scaleY = canvas.height / rect.height;
@@ -557,406 +616,441 @@ function handleCanvasClick(e) {
     const x = (e.clientX - rect.left) * scaleX;
     const y = (e.clientY - rect.top) * scaleY;
     
-    // Check if clicked on a sticker to remove it
-    for (let i = stickers.length - 1; i >= 0; i--) {
-        const sticker = stickers[i];
-        const stickerSize = sticker.size;
+    // Check if click is in allowed area
+    const isAllowedArea = checkStickerPlacement(x, y);
+    
+    if (isAllowedArea) {
+        stickers.push({
+            emoji: selectedSticker,
+            x: x,
+            y: y,
+            size: 30
+        });
         
-        if (x >= sticker.x && x <= sticker.x + stickerSize &&
-            y >= sticker.y - stickerSize && y <= sticker.y) {
-            stickers.splice(i, 1);
-            drawCanvas();
-            break;
+        drawCanvas();
+        showToast(`${selectedSticker} placed!`, 'success');
+    } else {
+        showToast('Stickers can only be placed outside the image area', 'error');
+    }
+    
+    // Reset cursor
+    document.body.style.cursor = 'default';
+    canvas.style.cursor = 'default';
+    delete canvas.dataset.selectedSticker;
+}
+
+function checkStickerPlacement(x, y) {
+    const margin = 30;
+    const frameThickness = 20;
+    
+    if (currentLayout === 'single') {
+        // Single image area
+        const imageArea = {
+            x: margin,
+            y: margin,
+            width: canvas.width - margin * 2,
+            height: canvas.height - margin * 2 - 60 // Leave space for caption
+        };
+        
+        if (bottomAreaOnly) {
+            // Only bottom area allowed
+            return y > imageArea.y + imageArea.height;
+        } else {
+            // Outside image area
+            return !(x > imageArea.x + frameThickness && 
+                    x < imageArea.x + imageArea.width - frameThickness && 
+                    y > imageArea.y + frameThickness && 
+                    y < imageArea.y + imageArea.height - frameThickness);
+        }
+    } else {
+        // Strip layout - more restrictive
+        const stripWidth = (canvas.width - 60) / 3;
+        const stripHeight = stripWidth * 1.2;
+        
+        if (bottomAreaOnly) {
+            return y > 40 + stripHeight;
+        } else {
+            // Only margins and between strips
+            return y < 40 || y > 40 + stripHeight || 
+                   (x > stripWidth + 10 && x < stripWidth + 30) || 
+                   (x > stripWidth * 2 + 20 && x < stripWidth * 2 + 40);
         }
     }
 }
 
+function clearStickers() {
+    stickers = [];
+    drawCanvas();
+    showToast('All stickers cleared', 'success');
+}
+
 function drawCanvas() {
+    // Clear canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     
-    // Draw frame
-    drawFrame();
+    // Set white background
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
     
-    // Draw image(s)
-    if (currentImage) {
-        if (currentLayout === 'strip' && Array.isArray(currentImage)) {
-            drawStripImages();
-        } else if (currentLayout === 'single' && !Array.isArray(currentImage)) {
-            drawSingleImage();
-        } else if (currentLayout === 'single' && Array.isArray(currentImage)) {
-            // Convert strip to single by using first image
-            drawSingleImageFromArray();
-        }
-    }
-    
-    // Apply effects
-    if (selectedEffects.length > 0) {
-        applyEffects();
+    if (currentLayout === 'single') {
+        drawSingleLayout();
+    } else {
+        drawStripLayout();
     }
     
     // Draw stickers
     drawStickers();
+}
+
+function drawSingleLayout() {
+    const margin = 30;
+    const frameThickness = 20;
     
-    // Draw caption
+    // Draw frame
+    drawFrame(margin, margin, canvas.width - margin * 2, canvas.height - margin * 2 - 60);
+    
+    // Draw image if available
+    if (currentImage) {
+        const imageArea = {
+            x: margin + frameThickness,
+            y: margin + frameThickness,
+            width: canvas.width - margin * 2 - frameThickness * 2,
+            height: canvas.height - margin * 2 - 60 - frameThickness * 2
+        };
+        
+        const processedImage = applyEffects(currentImage);
+        drawImageToFit(processedImage, imageArea.x, imageArea.y, imageArea.width, imageArea.height);
+    }
+    
+    // Draw caption in middle area
     if (currentCaption) {
         drawCaption();
     }
 }
 
-function drawFrame() {
+function drawStripLayout() {
+    const margin = 20;
+    const stripWidth = (canvas.width - margin * 2 - 20) / 3; // 20px gap between strips
+    const stripHeight = stripWidth * 1.2;
+    const startY = 40;
+    
+    // Draw 3 strips
+    for (let i = 0; i < 3; i++) {
+        const x = margin + i * (stripWidth + 10);
+        const y = startY;
+        
+        // Draw frame for each strip
+        drawFrame(x, y, stripWidth, stripHeight);
+        
+        // Draw image if available
+        if (stripImages[i]) {
+            const imageArea = {
+                x: x + 10,
+                y: y + 10,
+                width: stripWidth - 20,
+                height: stripHeight - 20
+            };
+            
+            const processedImage = applyEffects(stripImages[i]);
+            drawImageToFit(processedImage, imageArea.x, imageArea.y, imageArea.width, imageArea.height);
+        }
+        
+        // Draw slot number if no image
+        if (!stripImages[i]) {
+            ctx.fillStyle = '#cccccc';
+            ctx.font = '24px Inter';
+            ctx.textAlign = 'center';
+            ctx.fillText(i + 1, x + stripWidth / 2, y + stripHeight / 2);
+        }
+    }
+    
+    // Draw caption below strips
+    if (currentCaption) {
+        drawCaptionForStrip(startY + stripHeight + 20);
+    }
+}
+
+function drawFrame(x, y, width, height) {
     const frameData = frames.find(f => f.id === currentFrame);
     if (!frameData) return;
     
-    const frameWidth = 40;
+    ctx.save();
     
-    // Create gradient or solid color
     if (frameData.colors.length === 1) {
         ctx.fillStyle = frameData.colors[0];
-    } else {
-        const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+        ctx.fillRect(x, y, width, height);
+    } else if (frameData.id === 'rainbow') {
+        // Special rainbow frame
+        const gradient = ctx.createLinearGradient(x, y, x + width, y + height);
         frameData.colors.forEach((color, index) => {
             gradient.addColorStop(index / (frameData.colors.length - 1), color);
         });
         ctx.fillStyle = gradient;
+        ctx.fillRect(x, y, width, height);
+    } else {
+        // Gradient frame
+        const gradient = ctx.createLinearGradient(x, y, x + width, y + height);
+        frameData.colors.forEach((color, index) => {
+            gradient.addColorStop(index / (frameData.colors.length - 1), color);
+        });
+        ctx.fillStyle = gradient;
+        ctx.fillRect(x, y, width, height);
     }
     
-    // Draw frame
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    
-    // Clear inner area
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(frameWidth, frameWidth, canvas.width - frameWidth * 2, canvas.height - frameWidth * 2);
+    ctx.restore();
 }
 
-function drawSingleImage() {
-    const frameWidth = 40;
-    const imgArea = {
-        x: frameWidth,
-        y: frameWidth,
-        width: canvas.width - frameWidth * 2,
-        height: canvas.height - frameWidth * 2 - 80 // Leave space for caption
-    };
-    
-    drawImageInArea(currentImage, imgArea);
-}
-
-function drawSingleImageFromArray() {
-    const frameWidth = 40;
-    const imgArea = {
-        x: frameWidth,
-        y: frameWidth,
-        width: canvas.width - frameWidth * 2,
-        height: canvas.height - frameWidth * 2 - 80 // Leave space for caption
-    };
-    
-    drawImageInArea(currentImage[0], imgArea);
-}
-
-function drawStripImages() {
-    const frameWidth = 40;
-    const stripArea = {
-        x: frameWidth,
-        y: frameWidth,
-        width: canvas.width - frameWidth * 2,
-        height: canvas.height - frameWidth * 2 - 80 // Leave space for caption
-    };
-    
-    const imageHeight = (stripArea.height - 20) / 3; // 3 images with gaps
-    
-    currentImage.forEach((img, index) => {
-        const imgArea = {
-            x: stripArea.x,
-            y: stripArea.y + index * (imageHeight + 10),
-            width: stripArea.width,
-            height: imageHeight
-        };
-        
-        drawImageInArea(img, imgArea);
-    });
-}
-
-function drawImageInArea(image, area) {
-    // Calculate image scaling
-    const imgRatio = image.width / image.height;
-    const areaRatio = area.width / area.height;
+function drawImageToFit(image, x, y, width, height) {
+    const imgAspect = image.width / image.height;
+    const areaAspect = width / height;
     
     let drawWidth, drawHeight, drawX, drawY;
     
-    if (imgRatio > areaRatio) {
-        drawWidth = area.width;
-        drawHeight = area.width / imgRatio;
-        drawX = area.x;
-        drawY = area.y + (area.height - drawHeight) / 2;
+    if (imgAspect > areaAspect) {
+        // Image is wider than area
+        drawHeight = height;
+        drawWidth = height * imgAspect;
+        drawX = x - (drawWidth - width) / 2;
+        drawY = y;
     } else {
-        drawHeight = area.height;
-        drawWidth = area.height * imgRatio;
-        drawY = area.y;
-        drawX = area.x + (area.width - drawWidth) / 2;
+        // Image is taller than area
+        drawWidth = width;
+        drawHeight = width / imgAspect;
+        drawX = x;
+        drawY = y - (drawHeight - height) / 2;
     }
     
     ctx.drawImage(image, drawX, drawY, drawWidth, drawHeight);
 }
 
-function applyEffects() {
-    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    const data = imageData.data;
-    
-    selectedEffects.forEach(effectId => {
-        switch(effectId) {
-            case 'sepia':
-                applySepia(data);
-                break;
-            case 'vintage-film':
-                applyVintageFilm(data);
-                break;
-            case 'cyberpunk':
-                applyCyberpunk(data);
-                break;
-            case 'noir':
-                applyNoir(data);
-                break;
-            case 'rainbow':
-                applyRainbow(data);
-                break;
-            case 'deep-fried':
-                applyDeepFried(data);
-                break;
-            case 'glowing':
-                applyGlowing(data);
-                break;
-            case 'neon':
-                applyNeon(data);
-                break;
-            default:
-                // Apply basic filter
-                applyBasicFilter(data, effectId);
-        }
-    });
-    
-    ctx.putImageData(imageData, 0, 0);
-}
-
-function applySepia(data) {
-    for (let i = 0; i < data.length; i += 4) {
-        const r = data[i];
-        const g = data[i + 1];
-        const b = data[i + 2];
-        
-        data[i] = Math.min(255, (r * 0.393) + (g * 0.769) + (b * 0.189));
-        data[i + 1] = Math.min(255, (r * 0.349) + (g * 0.686) + (b * 0.168));
-        data[i + 2] = Math.min(255, (r * 0.272) + (g * 0.534) + (b * 0.131));
-    }
-}
-
-function applyVintageFilm(data) {
-    for (let i = 0; i < data.length; i += 4) {
-        const r = data[i];
-        const g = data[i + 1];
-        const b = data[i + 2];
-        
-        // Vintage warm tone
-        data[i] = Math.min(255, r * 1.1);
-        data[i + 1] = Math.min(255, g * 0.9);
-        data[i + 2] = Math.min(255, b * 0.8);
-    }
-}
-
-function applyCyberpunk(data) {
-    for (let i = 0; i < data.length; i += 4) {
-        const r = data[i];
-        const g = data[i + 1];
-        const b = data[i + 2];
-        
-        // Cyberpunk blue-purple tint
-        data[i] = Math.min(255, r * 0.8);
-        data[i + 1] = Math.min(255, g * 0.9);
-        data[i + 2] = Math.min(255, b * 1.3);
-    }
-}
-
-function applyNoir(data) {
-    for (let i = 0; i < data.length; i += 4) {
-        const r = data[i];
-        const g = data[i + 1];
-        const b = data[i + 2];
-        
-        // Convert to grayscale with high contrast
-        const gray = Math.min(255, Math.max(0, (r * 0.299 + g * 0.587 + b * 0.114) * 1.5));
-        data[i] = gray;
-        data[i + 1] = gray;
-        data[i + 2] = gray;
-    }
-}
-
-function applyRainbow(data) {
-    for (let i = 0; i < data.length; i += 4) {
-        const r = data[i];
-        const g = data[i + 1];
-        const b = data[i + 2];
-        
-        // Rainbow effect
-        const hue = (i / 4) % 360;
-        const saturation = 1;
-        const lightness = (r + g + b) / (3 * 255);
-        
-        const [newR, newG, newB] = hslToRgb(hue / 360, saturation, lightness);
-        data[i] = newR;
-        data[i + 1] = newG;
-        data[i + 2] = newB;
-    }
-}
-
-function applyDeepFried(data) {
-    for (let i = 0; i < data.length; i += 4) {
-        const r = data[i];
-        const g = data[i + 1];
-        const b = data[i + 2];
-        
-        // Deep fried effect - high contrast and saturation
-        data[i] = Math.min(255, r * 1.5);
-        data[i + 1] = Math.min(255, g * 1.3);
-        data[i + 2] = Math.min(255, b * 0.7);
-    }
-}
-
-function applyGlowing(data) {
-    for (let i = 0; i < data.length; i += 4) {
-        const r = data[i];
-        const g = data[i + 1];
-        const b = data[i + 2];
-        
-        // Glowing effect
-        const brightness = (r + g + b) / 3;
-        const factor = brightness > 128 ? 1.3 : 1.1;
-        
-        data[i] = Math.min(255, r * factor);
-        data[i + 1] = Math.min(255, g * factor);
-        data[i + 2] = Math.min(255, b * factor);
-    }
-}
-
-function applyNeon(data) {
-    for (let i = 0; i < data.length; i += 4) {
-        const r = data[i];
-        const g = data[i + 1];
-        const b = data[i + 2];
-        
-        // Neon effect - bright colors
-        data[i] = Math.min(255, r * 1.2);
-        data[i + 1] = Math.min(255, g * 1.4);
-        data[i + 2] = Math.min(255, b * 1.6);
-    }
-}
-
-function applyBasicFilter(data, effectId) {
-    // Apply basic color adjustments for other effects
-    const factor = effectId.includes('bright') ? 1.2 : 
-                   effectId.includes('dark') ? 0.8 : 1.0;
-    
-    for (let i = 0; i < data.length; i += 4) {
-        data[i] = Math.min(255, data[i] * factor);
-        data[i + 1] = Math.min(255, data[i + 1] * factor);
-        data[i + 2] = Math.min(255, data[i + 2] * factor);
-    }
-}
-
-function hslToRgb(h, s, l) {
-    let r, g, b;
-    
-    if (s === 0) {
-        r = g = b = l; // achromatic
-    } else {
-        const hue2rgb = (p, q, t) => {
-            if (t < 0) t += 1;
-            if (t > 1) t -= 1;
-            if (t < 1/6) return p + (q - p) * 6 * t;
-            if (t < 1/2) return q;
-            if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
-            return p;
-        };
-        
-        const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
-        const p = 2 * l - q;
-        r = hue2rgb(p, q, h + 1/3);
-        g = hue2rgb(p, q, h);
-        b = hue2rgb(p, q, h - 1/3);
-    }
-    
-    return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
-}
-
-function drawStickers() {
-    stickers.forEach(sticker => {
-        ctx.font = `${sticker.size}px Arial`;
-        ctx.fillText(sticker.emoji, sticker.x, sticker.y);
-    });
-}
-
 function drawCaption() {
-    const frameWidth = 40;
-    const captionArea = {
-        x: frameWidth,
-        y: canvas.height - 80,
-        width: canvas.width - frameWidth * 2,
-        height: 40
-    };
+    if (!currentCaption) return;
     
+    ctx.save();
     ctx.fillStyle = currentTextColor;
     ctx.font = `${currentFontSize}px ${currentFont}`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     
-    // Text shadow for better readability
-    ctx.shadowColor = 'rgba(0,0,0,0.5)';
+    // Position caption in middle area (not at bottom)
+    const captionY = canvas.height - 40; // 40px from bottom instead of 20px
+    
+    // Add text shadow for better visibility
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
     ctx.shadowBlur = 2;
     ctx.shadowOffsetX = 1;
     ctx.shadowOffsetY = 1;
     
-    ctx.fillText(currentCaption, captionArea.x + captionArea.width / 2, captionArea.y + captionArea.height / 2);
+    ctx.fillText(currentCaption, canvas.width / 2, captionY);
+    ctx.restore();
+}
+
+function drawCaptionForStrip(y) {
+    if (!currentCaption) return;
     
-    // Reset shadow
-    ctx.shadowColor = 'transparent';
-    ctx.shadowBlur = 0;
-    ctx.shadowOffsetX = 0;
-    ctx.shadowOffsetY = 0;
+    ctx.save();
+    ctx.fillStyle = currentTextColor;
+    ctx.font = `${currentFontSize}px ${currentFont}`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'top';
+    
+    // Add text shadow for better visibility
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+    ctx.shadowBlur = 2;
+    ctx.shadowOffsetX = 1;
+    ctx.shadowOffsetY = 1;
+    
+    ctx.fillText(currentCaption, canvas.width / 2, y);
+    ctx.restore();
+}
+
+function drawStickers() {
+    stickers.forEach(sticker => {
+        ctx.save();
+        ctx.font = `${sticker.size}px Arial`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(sticker.emoji, sticker.x, sticker.y);
+        ctx.restore();
+    });
+}
+
+function applyEffects(image) {
+    if (selectedEffects.length === 0) return image;
+    
+    const tempCanvas = document.createElement('canvas');
+    const tempCtx = tempCanvas.getContext('2d');
+    tempCanvas.width = image.width;
+    tempCanvas.height = image.height;
+    
+    tempCtx.drawImage(image, 0, 0);
+    
+    selectedEffects.forEach(effectId => {
+        applyEffect(tempCtx, effectId, tempCanvas.width, tempCanvas.height);
+    });
+    
+    const processedImage = new Image();
+    processedImage.src = tempCanvas.toDataURL();
+    return processedImage;
+}
+
+function applyEffect(ctx, effectId, width, height) {
+    const imageData = ctx.getImageData(0, 0, width, height);
+    const data = imageData.data;
+    
+    switch (effectId) {
+        case 'sepia':
+            for (let i = 0; i < data.length; i += 4) {
+                const r = data[i];
+                const g = data[i + 1];
+                const b = data[i + 2];
+                
+                data[i] = Math.min(255, (r * 0.393) + (g * 0.769) + (b * 0.189));
+                data[i + 1] = Math.min(255, (r * 0.349) + (g * 0.686) + (b * 0.168));
+                data[i + 2] = Math.min(255, (r * 0.272) + (g * 0.534) + (b * 0.131));
+            }
+            break;
+            
+        case 'noir':
+            for (let i = 0; i < data.length; i += 4) {
+                const gray = data[i] * 0.299 + data[i + 1] * 0.587 + data[i + 2] * 0.114;
+                data[i] = gray;
+                data[i + 1] = gray;
+                data[i + 2] = gray;
+            }
+            break;
+            
+        case 'vintage-film':
+            for (let i = 0; i < data.length; i += 4) {
+                data[i] = Math.min(255, data[i] * 1.2);
+                data[i + 1] = Math.min(255, data[i + 1] * 1.1);
+                data[i + 2] = Math.min(255, data[i + 2] * 0.9);
+            }
+            break;
+            
+        case 'cyberpunk':
+            for (let i = 0; i < data.length; i += 4) {
+                data[i] = Math.min(255, data[i] * 0.8);
+                data[i + 1] = Math.min(255, data[i + 1] * 1.2);
+                data[i + 2] = Math.min(255, data[i + 2] * 1.4);
+            }
+            break;
+            
+        case 'vaporwave':
+            for (let i = 0; i < data.length; i += 4) {
+                data[i] = Math.min(255, data[i] * 1.3);
+                data[i + 1] = Math.min(255, data[i + 1] * 0.8);
+                data[i + 2] = Math.min(255, data[i + 2] * 1.5);
+            }
+            break;
+            
+        case 'deep-fried':
+            for (let i = 0; i < data.length; i += 4) {
+                data[i] = Math.min(255, data[i] * 1.5);
+                data[i + 1] = Math.min(255, data[i + 1] * 1.2);
+                data[i + 2] = Math.min(255, data[i + 2] * 0.7);
+            }
+            break;
+            
+        case 'neon':
+            for (let i = 0; i < data.length; i += 4) {
+                data[i] = Math.min(255, data[i] * 1.4);
+                data[i + 1] = Math.min(255, data[i + 1] * 1.6);
+                data[i + 2] = Math.min(255, data[i + 2] * 1.2);
+            }
+            break;
+            
+        case 'matrix':
+            for (let i = 0; i < data.length; i += 4) {
+                data[i] = Math.min(255, data[i] * 0.3);
+                data[i + 1] = Math.min(255, data[i + 1] * 1.5);
+                data[i + 2] = Math.min(255, data[i + 2] * 0.3);
+            }
+            break;
+            
+        case 'blade-runner':
+            for (let i = 0; i < data.length; i += 4) {
+                data[i] = Math.min(255, data[i] * 1.2);
+                data[i + 1] = Math.min(255, data[i + 1] * 0.9);
+                data[i + 2] = Math.min(255, data[i + 2] * 0.7);
+            }
+            break;
+            
+        case 'rainbow':
+            for (let i = 0; i < data.length; i += 4) {
+                const x = (i / 4) % width;
+                const hue = (x / width) * 360;
+                const [r, g, b] = hslToRgb(hue, 0.8, 0.5);
+                data[i] = Math.min(255, data[i] * 0.5 + r * 0.5);
+                data[i + 1] = Math.min(255, data[i + 1] * 0.5 + g * 0.5);
+                data[i + 2] = Math.min(255, data[i + 2] * 0.5 + b * 0.5);
+            }
+            break;
+            
+        default:
+            // Apply a basic filter for other effects
+            for (let i = 0; i < data.length; i += 4) {
+                data[i] = Math.min(255, data[i] * 1.1);
+                data[i + 1] = Math.min(255, data[i + 1] * 1.05);
+                data[i + 2] = Math.min(255, data[i + 2] * 1.15);
+            }
+            break;
+    }
+    
+    ctx.putImageData(imageData, 0, 0);
+}
+
+function hslToRgb(h, s, l) {
+    h /= 360;
+    const a = s * Math.min(l, 1 - l);
+    const f = n => {
+        const k = (n + h / (1/12)) % 12;
+        return l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
+    };
+    return [f(0) * 255, f(8) * 255, f(4) * 255];
 }
 
 function downloadImage() {
     const link = document.createElement('a');
     link.download = `polaroid-${Date.now()}.png`;
-    link.href = canvas.toDataURL('image/png', 1.0);
+    link.href = canvas.toDataURL();
     link.click();
     
     showToast('Image downloaded successfully!', 'success');
 }
 
-function showToast(message, type = 'info') {
+function showToast(message, type = 'success') {
     const toast = document.getElementById('toast');
     const toastIcon = toast.querySelector('.toast-icon');
     const toastMessage = toast.querySelector('.toast-message');
     
+    // Remove existing classes
+    toast.classList.remove('success', 'error', 'warning');
+    
+    // Add new type class
+    toast.classList.add(type);
+    
     // Set icon based on type
-    switch(type) {
+    switch (type) {
         case 'success':
             toastIcon.className = 'toast-icon fas fa-check-circle';
-            toastIcon.style.color = 'var(--success)';
             break;
         case 'error':
-            toastIcon.className = 'toast-icon fas fa-exclamation-circle';
-            toastIcon.style.color = 'var(--danger)';
+            toastIcon.className = 'toast-icon fas fa-times-circle';
             break;
         case 'warning':
             toastIcon.className = 'toast-icon fas fa-exclamation-triangle';
-            toastIcon.style.color = 'var(--warning)';
             break;
         default:
             toastIcon.className = 'toast-icon fas fa-info-circle';
-            toastIcon.style.color = 'var(--accent-primary)';
     }
     
     toastMessage.textContent = message;
+    
+    // Show toast
     toast.classList.add('show');
     
+    // Hide after 3 seconds
     setTimeout(() => {
         toast.classList.remove('show');
     }, 3000);
@@ -970,25 +1064,3 @@ function showLoading(show) {
         loadingOverlay.classList.remove('active');
     }
 }
-
-// Initialize theme from localStorage
-document.addEventListener('DOMContentLoaded', function() {
-    const savedTheme = localStorage.getItem('theme');
-    if (savedTheme) {
-        isDarkMode = savedTheme === 'dark';
-        updateTheme();
-    }
-});
-
-// Handle page visibility change to stop camera when page is hidden
-document.addEventListener('visibilitychange', function() {
-    if (document.hidden && stream) {
-        stream.getTracks().forEach(track => track.stop());
-        stream = null;
-        document.getElementById('videoPreview').classList.remove('active');
-        document.getElementById('capturePhoto').disabled = true;
-        document.getElementById('capturePhoto').classList.add('opacity-50');
-        document.getElementById('captureStrip').disabled = true;
-        document.getElementById('captureStrip').classList.add('opacity-50');
-    }
-});
