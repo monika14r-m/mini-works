@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Creepster&family=Eater&family=Orbitron:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Creepster&family=Eater&family=Orbitron:wght@400;700&family=Impact&display=swap');
 
 * {
     margin: 0;
@@ -113,6 +113,22 @@ body {
     font-size: 1.1rem;
 }
 
+.capture-effects-section {
+    display: flex;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.capture-panel {
+    flex: 1;
+}
+
+.effects-panel {
+    flex: 1;
+}
+
 .camera-controls {
     display: flex;
     gap: 0.5rem;
@@ -212,10 +228,69 @@ body {
 
 .effect-grid {
     display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+    gap: 0.5rem;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.font-grid {
+    display: grid;
     grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
     gap: 0.5rem;
-    max-height: 250px;
-    overflow-y: auto;
+    margin-bottom: 1rem;
+}
+
+.font-option {
+    background: var(--bg-tertiary);
+    border: 2px solid var(--border);
+    color: var(--text-secondary);
+    padding: 0.5rem;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.8rem;
+    text-align: center;
+    min-height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.font-option:hover {
+    background: var(--accent);
+    transform: translateY(-2px);
+}
+
+.font-option.active {
+    background: var(--accent);
+    border-color: var(--accent);
+}
+
+.text-controls {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.text-controls label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.text-controls input[type="range"] {
+    width: 100px;
+}
+
+.text-controls input[type="color"] {
+    width: 40px;
+    height: 30px;
+    border: 2px solid var(--border);
+    border-radius: 6px;
+    cursor: pointer;
 }
 
 .effect-option {
@@ -242,6 +317,37 @@ body {
 .effect-option.active {
     background: var(--accent);
     border-color: var(--accent);
+}
+
+.sticker-controls {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.sticker-controls button {
+    background: var(--warning);
+    border: none;
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+}
+
+.sticker-controls button:hover {
+    background: #e68900;
+    transform: translateY(-2px);
+}
+
+.sticker-controls label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
 }
 
 .sticker-grid {
@@ -277,34 +383,9 @@ body {
     background: var(--bg-tertiary);
     border: 2px solid var(--border);
     color: var(--text-secondary);
-    padding: 0.5rem;
+    padding: 0.75rem;
     border-radius: 6px;
-    margin-bottom: 0.5rem;
-    font-size: 0.9rem;
-}
-
-#fontSelect {
-    width: 100%;
-    background: var(--bg-tertiary);
-    border: 2px solid var(--border);
-    color: var(--text-secondary);
-    padding: 0.5rem;
-    border-radius: 6px;
-    margin-bottom: 0.5rem;
-    font-size: 0.9rem;
-}
-
-#fontSizeSlider {
-    width: 100%;
-    margin-bottom: 0.5rem;
-}
-
-#textColorPicker {
-    width: 100%;
-    height: 40px;
-    border: 2px solid var(--border);
-    border-radius: 6px;
-    cursor: pointer;
+    font-size: 1rem;
 }
 
 #downloadBtn {
@@ -387,8 +468,19 @@ body {
         padding: 1rem;
     }
     
-    .frame-grid, .effect-grid, .sticker-grid {
+    .capture-effects-section {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .frame-grid, .effect-grid, .sticker-grid, .font-grid {
         grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
+    }
+    
+    .text-controls {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
     }
 }
 
