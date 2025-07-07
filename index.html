@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Polaroid Editor</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app">
+        <header class="header">
+            <h1>Polaroid Editor</h1>
+            <button class="theme-toggle" id="themeToggle">🌙</button>
+        </header>
+
+        <div class="container">
+            <div class="controls-panel">
+                <div class="control-section">
+                    <h3>📸 Capture</h3>
+                    <div class="camera-controls">
+                        <button id="startCamera">Start Camera</button>
+                        <button id="capturePhoto" disabled>Capture Photo</button>
+                        <input type="file" id="uploadPhoto" accept="image/*" style="display: none;">
+                        <button id="uploadBtn">Upload Photo</button>
+                    </div>
+                    <video id="video" width="200" height="150" style="display: none;"></video>
+                    <div id="countdown" class="countdown"></div>
+                </div>
+
+                <div class="control-section">
+                    <h3>🎨 Layout</h3>
+                    <div class="layout-controls">
+                        <label><input type="radio" name="layout" value="single" checked> Single</label>
+                        <label><input type="radio" name="layout" value="strip"> 3-Strip</label>
+                    </div>
+                </div>
+
+                <div class="control-section">
+                    <h3>🖼️ Frames</h3>
+                    <div class="frame-grid" id="frameGrid"></div>
+                </div>
+
+                <div class="control-section">
+                    <h3>✨ Effects</h3>
+                    <div class="effect-categories">
+                        <button class="category-btn active" data-category="meme">Meme</button>
+                        <button class="category-btn" data-category="cinematic">Cinematic</button>
+                    </div>
+                    <div class="effect-grid" id="effectGrid"></div>
+                </div>
+
+                <div class="control-section">
+                    <h3>📝 Caption</h3>
+                    <input type="text" id="captionInput" placeholder="Enter caption...">
+                    <select id="fontSelect">
+                        <option value="Arial">Arial</option>
+                        <option value="Creepster">Spooky</option>
+                        <option value="Eater">Ghost</option>
+                        <option value="Orbitron">Discord</option>
+                        <option value="Courier New">Typewriter</option>
+                    </select>
+                    <input type="range" id="fontSizeSlider" min="12" max="36" value="18">
+                    <input type="color" id="textColorPicker" value="#000000">
+                </div>
+
+                <div class="control-section">
+                    <h3>🎭 Stickers</h3>
+                    <div class="sticker-grid" id="stickerGrid"></div>
+                </div>
+
+                <div class="control-section">
+                    <h3>💾 Export</h3>
+                    <button id="downloadBtn">Download Polaroid</button>
+                </div>
+            </div>
+
+            <div class="preview-panel">
+                <div class="canvas-container">
+                    <canvas id="polaroidCanvas" width="400" height="500"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
